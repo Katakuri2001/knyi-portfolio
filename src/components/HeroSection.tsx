@@ -1,61 +1,62 @@
 import { PlaceholderPanel } from "@/components/PlaceholderPanel";
+import { Reveal } from "@/components/Reveal";
 
 export function HeroSection() {
   return (
     <section
       id="top"
-      className="min-h-[60vh] relative flex items-center justify-center overflow-hidden px-6 pt-32 pb-24 md:pt-40 md:pb-32"
+      className="mx-auto flex min-h-[calc(100svh-4rem)] max-w-7xl items-center px-6 py-24 md:py-32"
     >
-      <div className="max-w-7xl w-full flex flex-col items-center md:flex-row md:items-start md:w-[90%] gap-8">
-        <div className="text-center md:text-left w-full md:w-1/2">
-          <p
-            className="text-accent-secondary text-sm font-medium tracking-widest uppercase mb-4"
-          >
-            INDEPENDENT PERFORMANCE MARKETER
-          </p>
+      <div className="grid w-full items-center gap-12 md:grid-cols-2 md:gap-16">
+        <div>
+          <Reveal>
+            <p className="font-method mb-5 text-xs uppercase tracking-[0.18em] text-accent-secondary">
+              Independent performance marketer
+            </p>
+          </Reveal>
 
-          <h1 className="font-geist-sans text-5xl md:text-6xl font-bold leading-[1.1] tracking-tight mb-6">
-            Diagnose first. Scale with strategy.
-          </h1>
+          <Reveal delay={0.06}>
+            <h1 className="mb-6 font-geist-sans text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl md:text-6xl">
+              Diagnose first.
+              <br />
+              Scale with strategy.
+            </h1>
+          </Reveal>
 
-          <p className="text-foreground text-lg md:text-xl leading-relaxed mb-8 max-w-xl">
-            I connect business objectives with audience research, content strategy,
-            media planning, and performance measurement to help campaigns move
-            with purpose.
-          </p>
+          <Reveal delay={0.12}>
+            <p className="mb-9 max-w-lg text-lg leading-relaxed text-foreground">
+              I connect business objectives with audience research, content
+              strategy, media planning, and performance measurement to help
+              campaigns move with purpose.
+            </p>
+          </Reveal>
 
-          <div className="flex flex-col sm:flex-row gap-4">
-            <a
-              className="
-                font-geist-sans text-on-dark text-base font-medium
-                px-6 py-3 rounded-full bg-accent-secondary
-                transition-transform hover:-translate-y-0.5
-              "
-              href="#campaigns"
-            >
-              Explore My Work
-            </a>
-            <a
-              className="
-                font-geist-sans text-foreground text-base font-medium
-                px-6 py-3 rounded-full border border-foreground/25
-                transition-colors hover:border-foreground/50 hover:bg-foreground/5
-              "
-              href="#contact"
-            >
-              Contact
-            </a>
-          </div>
+          <Reveal delay={0.18}>
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <a
+                className="rounded-full bg-accent-secondary px-7 py-3.5 font-geist-sans text-base font-medium text-on-dark transition-transform duration-200 hover:-translate-y-0.5"
+                href="#campaigns"
+              >
+                Explore my work
+              </a>
+              <a
+                className="rounded-full border border-foreground/25 px-7 py-3.5 font-geist-sans text-base font-medium text-foreground transition-colors duration-200 hover:border-foreground/50 hover:bg-foreground/5"
+                href="#contact"
+              >
+                Contact
+              </a>
+            </div>
+          </Reveal>
         </div>
 
-        <div className="relative w-full md:w-1/2">
+        <Reveal delay={0.14}>
           <PlaceholderPanel
             aspect="portrait"
             label="Portrait"
             title="Khant Nyi Nyi"
             detail="Performance marketer, Yangon"
           />
-        </div>
+        </Reveal>
       </div>
     </section>
   );

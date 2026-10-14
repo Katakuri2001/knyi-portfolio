@@ -60,6 +60,92 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ---------------------------------------------------------------------------
+   Textured light background (Stage 1)
+
+   The base fill is unchanged (#E6E9EE). Depth comes from two cheap, purely
+   decorative layers: a fine grain and a set of soft teal washes. Both are
+   fixed behind content and never intercept pointer events.
+   --------------------------------------------------------------------------- */
+
+/* Fine grain. Inline SVG turbulence avoids shipping a bitmap and stays crisp
+   at any viewport. Kept at very low opacity so it reads as paper tooth. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.28'/%3E%3C/svg%3E");
+}
+
+/* Soft teal washes. Two large radial gradients in the brand accent, offset from
+   each other so the page has a subtle diagonal light source. Kept far below
+   text-contrast thresholds — these add tone, not information. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      58rem 42rem at 12% -8%,
+      color-mix(in oklab, var(--color-accent-primary) 26%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(
+      48rem 38rem at 88% 12%,
+      color-mix(in oklab, var(--color-accent-secondary) 14%, transparent),
+      transparent 60%
+    );
+}
+
+/* Content sits above both layers. */
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Dark surfaces are opaque, so the fixed washes must not show through them. */
+.bg-bg-dark {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------------------------------------------------------------------------
+   Motion
+   --------------------------------------------------------------------------- */
+
+html {
+  scroll-behavior: smooth;
+}
+
+.reveal-item {
+  transition:
+    opacity 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+[data-armed] {
+  transition:
+    opacity 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  [data-armed],
+  .reveal-item {
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 /* Visible focus for keyboard users on every interactive element. */
 :focus-visible {
   outline: 2px solid var(--color-accent-primary);
@@ -80,5 +166,25 @@ section[id] {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Dark mode: the washes would muddy a near-black field, so they recede. */
+@media (prefers-color-scheme: dark) {
+  body::before {
+    opacity: 0.22;
+  }
+  body::after {
+    background:
+      radial-gradient(
+        58rem 42rem at 12% -8%,
+        color-mix(in oklab, var(--color-accent-primary) 12%, transparent),
+        transparent 62%
+      ),
+      radial-gradient(
+        48rem 38rem at 88% 12%,
+        color-mix(in oklab, var(--color-accent-secondary) 22%, transparent),
+        transparent 60%
+      );
   }
 }

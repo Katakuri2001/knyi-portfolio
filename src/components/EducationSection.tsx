@@ -1,58 +1,76 @@
+import { Reveal } from "@/components/Reveal";
+
+const COMPLETED = [
+  { name: "Content Writing", detail: "The Burmese Content Academy, 2025" },
+  { name: "Graphic Design", detail: "Donato, 2023" },
+  { name: "Digital Marketing Basic", detail: "Digital Face, 2024" },
+];
+
+const STUDYING = [
+  { name: "Digital Marketing Advanced", detail: "Ye Htet" },
+  { name: "Digital Marketing Advanced", detail: "Bagan Digital Institute" },
+];
+
+function Entry({ name, detail }: { name: string; detail: string }) {
+  return (
+    <li className="border-l-2 border-border/70 pl-4 transition-colors duration-300 hover:border-accent-ink">
+      <p className="font-geist-sans font-medium">{name}</p>
+      <p className="text-muted-text">{detail}</p>
+    </li>
+  );
+}
+
 export function EducationSection() {
   return (
     <section
       id="education"
-      className="py-24 md:py-32 px-6 max-w-7xl mx-auto"
+      className="mx-auto max-w-7xl px-6 py-24 md:py-32"
     >
-      <div className="max-w-7xl mx-auto">
-        <p
-          className="text-accent-secondary text-sm font-medium tracking-widest uppercase mb-12"
-        >
-          EDUCATION & PROFESSIONAL DEVELOPMENT
+      <Reveal>
+        <p className="font-method mb-6 text-xs uppercase tracking-[0.18em] text-accent-secondary">
+          Education &amp; professional development
         </p>
+      </Reveal>
 
-        <h2 className="font-geist-sans text-4xl md:text-5xl font-bold leading-[1.2] tracking-tight mb-12">
+      <Reveal delay={0.06}>
+        <h2 className="mb-12 font-geist-sans text-4xl font-bold leading-[1.15] tracking-tight md:text-5xl">
           Education
         </h2>
+      </Reveal>
 
-        <div className="grid grid-cols-2 gap-6">
+      <div className="grid gap-12 md:grid-cols-2">
+        <Reveal delay={0.1}>
           <div>
-            <h3 className="font-geist-sans text-xl font-bold mb-4">Completed Training</h3>
-            <ul className="space-y-3 text-muted-text text-sm">
-              <li>
-                <p className="font-medium">Content Writing</p>
-                <p className="text-muted-text">The Burmese Content Academy, 2025</p>
-              </li>
-              <li>
-                <p className="font-medium">Graphic Design</p>
-                <p className="text-muted-text">Donato, 2023</p>
-              </li>
-              <li>
-                <p className="font-medium">Digital Marketing Basic</p>
-                <p className="text-muted-text">Digital Face, 2024</p>
-              </li>
+            <h3 className="mb-6 font-geist-sans text-lg font-bold">
+              Completed training
+            </h3>
+            <ul className="space-y-5">
+              {COMPLETED.map((entry) => (
+                <Entry key={entry.name + entry.detail} {...entry} />
+              ))}
             </ul>
           </div>
+        </Reveal>
 
+        <Reveal delay={0.16}>
           <div>
-            <h3 className="font-geist-sans text-xl font-bold mb-4">Currently Studying</h3>
-            <ul className="space-y-3 text-muted-text text-sm">
-              <li>
-                <p className="font-medium">Digital Marketing Advanced</p>
-                <p className="text-muted-text">Ye Htet</p>
-              </li>
-              <li>
-                <p className="font-medium">Digital Marketing Advanced</p>
-                <p className="text-muted-text">Bagan Digital Institute</p>
-              </li>
+            <h3 className="mb-6 font-geist-sans text-lg font-bold">
+              Currently studying
+            </h3>
+            <ul className="space-y-5">
+              {STUDYING.map((entry) => (
+                <Entry key={entry.name + entry.detail} {...entry} />
+              ))}
             </ul>
           </div>
-        </div>
+        </Reveal>
+      </div>
 
-        <p className="mt-8 text-sm text-muted-text">
+      <Reveal delay={0.2}>
+        <p className="mt-12 border-t border-border/50 pt-6 text-muted-text">
           Second-year university studies, discontinued before graduation.
         </p>
-      </div>
+      </Reveal>
     </section>
   );
 }

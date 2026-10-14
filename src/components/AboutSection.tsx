@@ -1,49 +1,61 @@
 import { Reveal } from "@/components/Reveal";
 
+const PRINCIPLES = [
+  {
+    index: "01",
+    label: "Background",
+    body: "Freelance content writing and Facebook marketing experience from 2023-2026, with a developing specialization in performance marketing.",
+  },
+  {
+    index: "02",
+    label: "How I think",
+    body: "Research-led approach. I always start by understanding the business problem, the audience, and the competitive landscape before developing strategy.",
+  },
+  {
+    index: "03",
+    label: "What I value",
+    body: "Strategic thinking, creative quality, and data-driven optimization. Results that serve the business objective.",
+  },
+];
+
 export function AboutSection() {
   return (
-    <section id="about" className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-      <div className="mx-auto max-w-3xl text-center">
+    <section id="about" className="section-lead scroll-mt-24 px-6">
+      <div className="mx-auto max-w-7xl">
         <Reveal>
-          <p className="mb-8 text-sm font-medium uppercase tracking-widest text-accent-secondary">
-            Independent Performance Marketer
+          <p className="text-eyebrow mb-8 flex items-center gap-4 text-accent-secondary">
+            <span className="h-px w-12 bg-accent-secondary/40" aria-hidden="true" />
+            Background
           </p>
         </Reveal>
 
-        <Reveal delay={0.06}>
-          <h2 className="mb-6 font-geist-sans text-4xl font-bold leading-[1.15] tracking-tight md:text-5xl">
-            Diagnose First. Strategize Better. Optimize for Growth.
-          </h2>
-        </Reveal>
+        <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
+          <Reveal delay={0.06} className="lg:col-span-7">
+            <h2 className="text-title text-foreground">
+              Diagnose First. Strategize Better.{" "}
+              <span className="text-muted-text">Optimize for Growth.</span>
+            </h2>
+          </Reveal>
 
-        <Reveal delay={0.12}>
-          <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-foreground md:text-xl">
-            I connect business objectives with audience research, content strategy,
-            media planning, and performance measurement to help campaigns move
-            with purpose.
-          </p>
-        </Reveal>
+          <Reveal delay={0.12} className="lg:col-span-4 lg:col-start-9">
+            <p className="text-lede text-muted-text">
+              I connect business objectives with audience research, content
+              strategy, media planning, and performance measurement to help
+              campaigns move with purpose.
+            </p>
+          </Reveal>
+        </div>
 
-        <div className="grid gap-8 border-t border-border/50 pt-10 text-left md:grid-cols-3">
-          {[
-            {
-              label: "Background",
-              body: "Freelance content writing and Facebook marketing experience from 2023-2026, with a developing specialization in performance marketing.",
-            },
-            {
-              label: "How I think",
-              body: "Research-led approach. I always start by understanding the business problem, the audience, and the competitive landscape before developing strategy.",
-            },
-            {
-              label: "What I value",
-              body: "Strategic thinking, creative quality, and data-driven optimization. Results that serve the business objective.",
-            },
-          ].map((item) => (
-            <Reveal key={item.label} delay={0.16}>
-              <p className="font-method mb-2 text-xs uppercase tracking-[0.18em] text-accent-ink">
-                {item.label}
-              </p>
-              <p className="text-muted-text">{item.body}</p>
+        <div className="mt-20 grid gap-px border-t border-border bg-border md:grid-cols-3">
+          {PRINCIPLES.map((principle, i) => (
+            <Reveal key={principle.index} delay={0.16 + i * 0.05}>
+              <div className="h-full bg-background p-8">
+                <p className="text-index mb-6 text-accent-ink/25">{principle.index}</p>
+                <h3 className="text-eyebrow mb-4 text-foreground">
+                  {principle.label}
+                </h3>
+                <p className="leading-relaxed text-muted-text">{principle.body}</p>
+              </div>
             </Reveal>
           ))}
         </div>

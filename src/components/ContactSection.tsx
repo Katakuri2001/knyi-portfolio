@@ -23,37 +23,41 @@ const CHANNELS = [
 
 export function ContactSection() {
   return (
-    <section id="contact" className="scroll-mt-16 bg-bg-dark py-24 md:py-32">
-      <div className="mx-auto max-w-3xl px-6">
+    <section id="contact" className="section-lead scroll-mt-24 bg-bg-dark">
+      <div className="mx-auto max-w-7xl px-6">
         <Reveal>
-          <p className="font-method text-xs uppercase tracking-[0.18em] text-accent-primary">
+          <p className="text-eyebrow mb-8 flex items-center gap-4 text-accent-primary">
+            <span className="h-px w-12 bg-accent-primary/40" aria-hidden="true" />
             Get in touch
           </p>
         </Reveal>
 
-        <Reveal delay={0.06}>
-          <h2 className="mt-6 mb-6 font-geist-sans text-4xl font-bold leading-[1.15] tracking-tight text-on-dark md:text-5xl">
-            Let&apos;s talk about your campaign.
-          </h2>
-        </Reveal>
+        <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
+          <Reveal delay={0.06} className="lg:col-span-7">
+            <h2 className="text-title text-white">
+              Let&apos;s talk
+              <br />
+              about your campaign.
+            </h2>
+          </Reveal>
 
-        <Reveal delay={0.12}>
-          <p className="mb-12 max-w-xl text-lg leading-relaxed text-on-dark/70">
-            I am available for freelance projects and collaborations. If you have a
-            campaign that needs a clearer strategy, a tighter audience definition,
-            or a more honest read on what is actually working, I would like to hear
-            about it.
-          </p>
-        </Reveal>
+          <Reveal delay={0.12} className="lg:col-span-4 lg:col-start-9">
+            <p className="text-lede text-on-dark/70">
+              Available for freelance projects and collaborations. If a campaign
+              needs clearer strategy, a tighter audience definition, or a more
+              honest read on what is working, I would like to hear about it.
+            </p>
+          </Reveal>
+        </div>
 
         <Reveal delay={0.18}>
-          <dl className="grid gap-x-12 gap-y-8 border-t border-white/10 pt-10 sm:grid-cols-2">
+          <dl className="mt-20 grid gap-px border-t border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-3">
             {CHANNELS.map((channel) => (
-              <div key={channel.label}>
-                <dt className="font-method text-xs uppercase tracking-[0.18em] text-on-dark-muted">
+              <div key={channel.label} className="bg-bg-dark p-6 md:p-8">
+                <dt className="text-eyebrow text-on-dark-muted">
                   {channel.label}
                 </dt>
-                <dd className="mt-2">
+                <dd className="mt-3">
                   {channel.href ? (
                     <a
                       href={channel.href}
@@ -76,7 +80,7 @@ export function ContactSection() {
         </Reveal>
 
         <Reveal delay={0.22}>
-          <p className="mt-12 border-t border-white/10 pt-8 text-sm text-on-dark-muted">
+          <p className="mt-16 text-sm text-on-dark-muted">
             <strong className="font-medium text-on-dark">K-Nyi</strong> —
             Independent performance marketing &amp; media buying
           </p>

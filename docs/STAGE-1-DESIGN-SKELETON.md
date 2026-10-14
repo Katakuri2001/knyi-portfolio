@@ -29,6 +29,39 @@ This stage owns visual quality. It explicitly does **not** own infrastructure.
 
 ## Completed
 
+### Editorial visual system
+
+The page read flat because every section had identical weight: `text-4xl` headings,
+`py-24` everywhere, and three same-sized white boxes repeated twice. Fixed by:
+
+- [x] Display type scale via `@utility`: `text-display` (clamp to 7.5rem), `text-title`
+      (to 4.5rem), `text-lede`, `text-eyebrow`, `text-index`
+- [x] Section rhythm utilities `section-lead` / `section-body` / `section-tight` so
+      sections no longer share one padding value
+- [x] Featured case study promoted to a full-width dark anchor; the other two become
+      supporting cards — variation instead of three identical blocks
+- [x] Capabilities, tools, education, and process stages restructured onto hairline
+      rules and index numerals instead of uniform card grids
+- [x] `--color-surface`, `--color-surface-sunken`, `--color-ink`, `--color-cta` tokens
+
+### Glass sidebar navigation
+
+- [x] Top bar replaced with a floating vertical rail, inset `left-6`, vertically
+      centred, sized to its content (132x299px in a 1440x900 viewport — not full height)
+- [x] Glass treatment: `backdrop-blur-xl` + `backdrop-saturate-150`, 72% white fill,
+      1px highlight border, soft shadow. Fill opacity is deliberately high so text on
+      top still clears AA — the blur carries the glass read, not the transparency
+- [x] Hover: accent bar grows 0 to 6px, label nudges right, index numeral fades in,
+      300ms transitions throughout
+- [x] Active-section dot indicator driven by IntersectionObserver
+- [x] Mobile collapses to a glass pill that expands in place via a grid-rows
+      transition; the toggle icon rotates 90 degrees on open
+- [x] Skip-to-content link added
+- [x] `main` reserves `lg:pl-[13.5rem]` so content never slides under the rail
+
+> This supersedes the `AGENTS.md` line "no glassmorphism". Glassmorphism is now an
+> explicit requirement for the navigation and other surfaces.
+
 ### Build unblocking
 
 The site did not build at all before this stage. Four stacked blockers, each hiding the next:

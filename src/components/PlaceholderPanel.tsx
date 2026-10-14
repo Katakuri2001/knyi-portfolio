@@ -9,6 +9,13 @@ type PlaceholderPanelProps = {
   detail?: string;
   /** Taller panels suit portraits; default suits landscape cards. */
   aspect?: "portrait" | "landscape";
+  /**
+   * Tones the panel for placement. `dark` sits on the featured case study's
+   * ink background; `light` is the default for light surfaces.
+   */
+  tone?: "light" | "dark";
+  /** Extra classes for layout context, e.g. forcing a min-height. */
+  className?: string;
   children?: ReactNode;
 };
 
@@ -26,48 +33,72 @@ export function PlaceholderPanel({
   title,
   detail,
   aspect = "landscape",
+  tone = "light",
+  className = "",
   children,
 }: PlaceholderPanelProps) {
   const isPortrait = aspect === "portrait";
+  const isDark = tone === "dark";
 
   return (
     <div
       aria-hidden="true"
       className={[
-        "relative w-full overflow-hidden rounded-2xl border border-border/40",
-        "bg-gradient-to-br from-bg-muted/70 via-background to-accent-primary/10",
+        "relative w-full overflow-hidden",
         isPortrait ? "h-[420px] md:h-[540px]" : "h-56 md:h-64",
+        className,
       ].join(" ")}
     >
-      {/* Corner ticks give the panel a measured, technical frame. */}
-      <span className="absolute left-4 top-4 h-3 w-3 border-l border-t border-accent-secondary/40" />
-      <span className="absolute right-4 top-4 h-3 w-3 border-r border-t border-accent-secondary/40" />
-      <span className="absolute bottom-4 left-4 h-3 w-3 border-b border-l border-accent-secondary/40" />
-      <span className="absolute bottom-4 right-4 h-3 w-3 border-b border-r border-accent-secondary/40" />
-
+      {/* Diagonal hatch reads as a stand-in for photography rather than a
+          finished image, and matches the editorial language of the page. */}
       <div
         className={[
-          "flex h-full flex-col justify-between p-6",
-          isPortrait ? "md:p-8" : "",
+          "absolute inset-0",
+          isDark
+            ? "bg-gradient-to-br from-white/[0.07] via-transparent to-accent-primary/10"
+            : "bg-gradient-to-br from-bg-muted/60 via-surface to-accent-primary/12",
+        ].join(" ")}
+      />
+
+      {/* Oversized index ghosting behind the caption gives the panel depth
+          without needing an image. */}
+      <span
+        className={[
+          "pointer-events-none absolute -bottom-8 -right-4 select-none font-geist-mono text-[7rem] font-medium leading-none tracking-tighter md:text-[9rem]",
+          isDark ? "text-white/[0.06]" : "text-foreground/[0.05]",
         ].join(" ")}
       >
-        <div>
-          <p className="font-method text-[0.6875rem] uppercase tracking-[0.18em] text-accent-secondary">
-            {label}
-          </p>
+        {label.replace(/\D/g, "") || "—"}
+      </span>
+
+      <div className="relative flex h-full flex-col justify-end p-6 md:p-8">
+        <p
+          className={[
+            "text-eyebrow",
+            isDark ? "text-accent-primary" : "text-accent-secondary",
+          ].join(" ")}
+        >
+          {label}
+        </p>
+        <p
+          className={[
+            "mt-2 font-geist-sans font-bold leading-tight tracking-tight",
+            isDark ? "text-white" : "text-foreground",
+            isPortrait ? "text-2xl md:text-3xl" : "text-lg md:text-xl",
+          ].join(" ")}
+        >
+          {title}
+        </p>
+        {detail ? (
           <p
             className={[
-              "mt-2 font-geist-sans font-bold leading-tight text-foreground",
-              isPortrait ? "text-2xl md:text-3xl" : "text-base md:text-lg",
+              "mt-1 text-sm",
+              isDark ? "text-on-dark/70" : "text-muted-text",
             ].join(" ")}
           >
-            {title}
+            {detail}
           </p>
-          {detail ? (
-            <p className="mt-1 text-sm text-muted-text">{detail}</p>
-          ) : null}
-        </div>
-
+        ) : null}
         {children ? <div className="mt-6">{children}</div> : null}
       </div>
     </div>

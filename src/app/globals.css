@@ -35,6 +35,73 @@
   --font-geist-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
   --font-geist-mono: var(--font-geist-mono), ui-monospace, monospace;
   --font-method: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Surfaces for editorial cards. Distinct from --color-background so cards
+     separate from the page without relying on shadow. */
+  --color-surface: rgb(255, 255, 255);
+  --color-surface-sunken: rgb(219, 224, 231);
+  --color-ink: rgb(2, 31, 63);
+  /* Primary CTA fill. Deep teal with white text: 12.4:1 contrast. */
+  --color-cta: rgb(2, 31, 63);
+  --color-on-cta: rgb(255, 255, 255);
+
+  /* Glass surfaces. The fill is deliberately high-opacity: text sitting on top
+     must still clear WCAG AA, and a low-opacity pane over a mid-light page
+     cannot be relied on for that. The blur carries the glass read, not the
+     transparency. */
+  --color-glass: rgb(255, 255, 255);
+  --glass-alpha: 0.72;
+  --color-glass-border: rgb(255, 255, 255);
+  --color-glass-highlight: rgb(255, 255, 255);
+  --glass-blur: 20px;
+  --glass-shadow: 0 18px 40px -18px rgb(2 31 63 / 0.28);
+}
+
+/* ---------------------------------------------------------------------------
+   Display type scale
+
+   Oversized, tightly tracked headlines are the primary visual element. The
+   hero runs to 7.5rem and section titles to 4.5rem at the widest breakpoint,
+   which is what gives the page its editorial weight. clamp() keeps these
+   fluid so no size is hard-coded twice.
+   --------------------------------------------------------------------------- */
+@utility text-display {
+  font-family: var(--font-geist-sans);
+  font-weight: 700;
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  font-size: clamp(2.75rem, 9vw, 7.5rem);
+}
+
+@utility text-title {
+  font-family: var(--font-geist-sans);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  font-size: clamp(2.25rem, 5.5vw, 4.5rem);
+}
+
+@utility text-lede {
+  font-size: clamp(1.125rem, 1.6vw, 1.5rem);
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+
+@utility text-eyebrow {
+  font-family: var(--font-geist-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* Oversized index numeral for the process stages and case studies. */
+@utility text-index {
+  font-family: var(--font-geist-mono);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-size: clamp(3rem, 6vw, 5.5rem);
 }
 
 /* Dark scheme is opt-in via the OS preference. Tokens are overridden rather
@@ -50,6 +117,11 @@
     --color-on-dark: rgb(230, 233, 238);
     --color-on-dark-muted: rgb(168, 176, 183);
     --color-accent-ink: rgb(94, 234, 212);
+
+    /* Dark-mode glass: a near-black pane with a light hairline. */
+    --color-glass: rgb(20, 26, 32);
+    --glass-alpha: 0.78;
+    --glass-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.7);
   }
 }
 
@@ -102,16 +174,48 @@ body::after {
     );
 }
 
-/* Content sits above both layers. */
-body > * {
+/* Content sits above both layers.
+   Only <main> needs `position: relative` here. Applying it to every direct body
+   child would override `position: fixed` on the navigation header, which is
+   unlayered CSS beating Tailwind's layered utilities. */
+body > main {
   position: relative;
   z-index: 1;
+}
+
+/* ---------------------------------------------------------------------------
+   Editorial rhythm
+
+   Uniform vertical padding on every section flattened the page. These helpers
+   give each section a distinct role: lead-in sections breathe, content-dense
+   sections tighten, and feature sections break out to full bleed.
+   --------------------------------------------------------------------------- */
+@utility section-lead {
+  padding-block: clamp(5rem, 11vw, 9rem);
+}
+
+@utility section-body {
+  padding-block: clamp(4rem, 8vw, 7rem);
+}
+
+@utility section-tight {
+  padding-block: clamp(3rem, 6vw, 5rem);
+}
+
+/* Hairline rule used as a structural divider instead of stacked boxes. */
+@utility rule-top {
+  border-top: 1px solid var(--color-border);
 }
 
 /* Dark surfaces are opaque, so the fixed washes must not show through them. */
 .bg-bg-dark {
   position: relative;
   z-index: 1;
+}
+
+/* The glass navigation sits above the page but below the skip link. */
+body > header {
+  z-index: 50;
 }
 
 /* ---------------------------------------------------------------------------

@@ -4,9 +4,7 @@ const STAGES = [
   {
     number: "01",
     title: "Diagnose",
-    icon: (
-      <path d="M3 6h18M3 12h18M3 18h18" strokeLinecap="round" />
-    ),
+    icon: <path d="M3 6h18M3 12h18M3 18h18" strokeLinecap="round" />,
     items: [
       "Business problem analysis",
       "Market & competitor research",
@@ -66,60 +64,68 @@ const STAGES = [
 
 export function WorkingMethodSection() {
   return (
-    <section
-      id="approach"
-      className="mx-auto max-w-7xl px-6 py-24 md:py-32"
-    >
-      <Reveal>
-        <p className="font-method mb-6 text-xs uppercase tracking-[0.18em] text-accent-secondary">
-          Working method
-        </p>
-      </Reveal>
+    <section id="approach" className="section-lead scroll-mt-24 px-6">
+      <div className="mx-auto max-w-7xl">
+        <Reveal>
+          <p className="text-eyebrow mb-8 flex items-center gap-4 text-accent-secondary">
+            <span className="h-px w-12 bg-accent-secondary/40" aria-hidden="true" />
+            Working method
+          </p>
+        </Reveal>
 
-      <Reveal delay={0.06}>
-        <h2 className="mb-14 font-geist-sans text-4xl font-bold leading-[1.15] tracking-tight md:text-5xl">
-          Four-stage process
-        </h2>
-      </Reveal>
+        <Reveal delay={0.06}>
+          <h2 className="text-title max-w-4xl text-foreground">
+            Four stages,
+            <br />
+            <span className="text-muted-text">in order.</span>
+          </h2>
+        </Reveal>
 
-      <ol className="grid gap-x-12 gap-y-12 md:grid-cols-2">
-        {STAGES.map((stage, index) => (
-          <Reveal as="li" key={stage.number} delay={0.1 + index * 0.05}>
-            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-accent-ink/30 bg-accent-primary/10">
-              <svg
-                aria-hidden="true"
-                className="h-6 w-6 text-accent-ink"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                strokeLinecap="round"
-              >
-                {stage.icon}
-              </svg>
-            </div>
+        {/* Stages as connected steps: the vertical rule is the through-line,
+            so the process reads as one sequence rather than four loose blocks. */}
+        <ol className="mt-20 grid gap-x-10 gap-y-14 md:grid-cols-2">
+          {STAGES.map((stage, i) => (
+            <Reveal as="li" key={stage.number} delay={0.12 + i * 0.05}>
+              <div className="relative border-t border-border pt-8">
+                <div className="flex items-baseline justify-between gap-6">
+                  <span className="text-index text-accent-ink/30">
+                    {stage.number}
+                  </span>
+                  <div className="flex h-10 w-10 flex-none items-center justify-center rounded-full border border-accent-ink/25 transition-colors duration-300 group-hover:border-accent-ink/60">
+                    <svg
+                      aria-hidden="true"
+                      className="h-5 w-5 text-accent-ink"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                    >
+                      {stage.icon}
+                    </svg>
+                  </div>
+                </div>
 
-            <h3 className="mt-6 font-geist-sans text-xl font-bold">
-              <span className="font-method mr-2 text-sm text-accent-ink">
-                {stage.number}
-              </span>
-              {stage.title}
-            </h3>
+                <h3 className="mt-6 font-geist-sans text-3xl font-bold tracking-tight text-foreground">
+                  {stage.title}
+                </h3>
 
-            <ul className="mt-4 space-y-3 text-muted-text">
-              {stage.items.map((item) => (
-                <li key={item} className="flex gap-3 leading-relaxed">
-                  <span
-                    aria-hidden="true"
-                    className="mt-2 h-px w-3 flex-none bg-accent-ink/60"
-                  />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </Reveal>
-        ))}
-      </ol>
+                <ul className="mt-6 space-y-3 text-muted-text">
+                  {stage.items.map((item) => (
+                    <li key={item} className="flex gap-3 leading-relaxed">
+                      <span
+                        aria-hidden="true"
+                        className="mt-2.5 h-px w-3 flex-none bg-accent-ink/50"
+                      />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </Reveal>
+          ))}
+        </ol>
+      </div>
     </section>
   );
 }

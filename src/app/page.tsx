@@ -1,6 +1,5 @@
-import { SiteNavigation } from "@/components/SiteNavigation";
-import { HeroSection } from "@//components/HeroSection";
-import { AboutSection } from "@//components/AboutSection";
+import { HeroSection } from "@/components/HeroSection";
+import { AboutSection } from "@/components/AboutSection";
 import { ExpertiseSection } from "@/components/ExpertiseSection";
 import { CampaignCaseStudySection } from "@/components/CampaignCaseStudySection";
 import { WorkingMethodSection } from "@/components/WorkingMethodSection";
@@ -11,26 +10,16 @@ import { SiteFooter } from "@/components/SiteFooter";
 
 export default function Home() {
   return (
-    <div className="flex-1">
-      <SiteNavigation />
-
+    <>
       <HeroSection />
-
       <AboutSection />
-
       <ExpertiseSection />
-
       <CampaignCaseStudySection />
-
       <WorkingMethodSection />
-
       <ToolsSection />
-
       <EducationSection />
-
       <ContactSection />
-
       <SiteFooter />
-    </div>
+    </>
   );
 }

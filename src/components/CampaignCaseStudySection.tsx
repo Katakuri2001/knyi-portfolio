@@ -1,8 +1,9 @@
-import Image from "next/image";
+import { PlaceholderPanel } from "@/components/PlaceholderPanel";
 
 export function CampaignCaseStudySection() {
   return (
     <section
+      id="campaigns"
       className="py-24 md:py-32 px-6 max-w-7xl mx-auto"
     >
       <div className="max-w-7xl mx-auto">
@@ -30,19 +31,10 @@ export function CampaignCaseStudySection() {
               hover:shadow-lg
             "
           >
-            <div className="relative h-64 md:h-80 overflow-hidden">
-              <Image
-                src="/placeholder-building.jpg"
-                alt="Modular Building Business case study"
-                className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
-                width={800}
-                height={600}
-              />
-              <div
-                className="
-                  absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent
-                  opacity-0 group-hover:opacity-100 transition-opacity duration-300
-                "
+            <div className="relative">
+              <PlaceholderPanel
+                label="Case Study 01"
+                title="Modular Building"
               />
             </div>
 
@@ -64,14 +56,14 @@ export function CampaignCaseStudySection() {
                 Meta advertising
               </h3>
 
-              <p className="text-muted/60 text-sm mb-4">
+              <p className="text-muted-text text-sm mb-4">
                 Performance marketing campaign
               </p>
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="font-method">Ad Spend</p>
-                  <p className="text-accent-primary">US$160</p>
+                  <p className="text-accent-ink">US$160</p>
                 </div>
                 <div>
                   <p className="font-method">Duration</p>
@@ -82,7 +74,7 @@ export function CampaignCaseStudySection() {
               <div className="grid grid-cols-2 gap-4 my-4">
                 <div>
                   <p className="font-method">Audience</p>
-                  <p className="text-accent-primary">0 &rarr; ~300 followers</p>
+                  <p className="text-accent-ink">0 &rarr; ~300 followers</p>
                 </div>
                 <div>
                   <p className="font-method">Orders</p>
@@ -90,7 +82,7 @@ export function CampaignCaseStudySection() {
                 </div>
               </div>
 
-              <p className="text-xs text-muted/50 mt-4">
+              <p className="text-xs text-muted-text mt-4">
                 Results are reported or estimated from the available project figures.
                 They have not been independently verified, and advertising-attributed
                 revenue is not claimed.
@@ -111,19 +103,10 @@ export function CampaignCaseStudySection() {
               hover:shadow-lg
             "
           >
-            <div className="relative h-64 md:h-80 overflow-hidden">
-              <Image
-                src="/placeholder-paratha.jpg"
-                alt="Ready-Made Paratha Business case study"
-                className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
-                width={800}
-                height={600}
-              />
-              <div
-                className="
-                  absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent
-                  opacity-0 group-hover:opacity-100 transition-opacity duration-300
-                "
+            <div className="relative">
+              <PlaceholderPanel
+                label="Case Study 02"
+                title="Ready-Made Paratha"
               />
             </div>
 
@@ -145,14 +128,14 @@ export function CampaignCaseStudySection() {
                 Meta advertising
               </h3>
 
-              <p className="text-muted/60 text-sm mb-4">
+              <p className="text-muted-text text-sm mb-4">
                 Performance marketing campaign
               </p>
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="font-method">Ad Spend</p>
-                  <p className="text-accent-primary">US$170</p>
+                  <p className="text-accent-ink">US$170</p>
                 </div>
                 <div>
                   <p className="font-method">Duration</p>
@@ -163,7 +146,7 @@ export function CampaignCaseStudySection() {
               <div className="grid grid-cols-2 gap-4 my-4">
                 <div>
                   <p className="font-method">Audience</p>
-                  <p className="text-accent-primary">0 &rarr; ~2,000 followers</p>
+                  <p className="text-accent-ink">0 &rarr; ~2,000 followers</p>
                 </div>
                 <div>
                   <p className="font-method">Orders</p>
@@ -171,7 +154,7 @@ export function CampaignCaseStudySection() {
                 </div>
               </div>
 
-              <p className="text-xs text-muted/50 mt-4">
+              <p className="text-xs text-muted-text mt-4">
                 Results are reported or estimated from the available project figures.
                 They have not been independently verified, and advertising-attributed
                 revenue is not claimed.
@@ -192,19 +175,10 @@ export function CampaignCaseStudySection() {
               hover:shadow-lg
             "
           >
-            <div className="relative h-64 md:h-80 overflow-hidden">
-              <Image
-                src="/placeholder-undertaking.jpg"
-                alt="Women Underwear Tailoring case study"
-                className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
-                width={800}
-                height={600}
-              />
-              <div
-                className="
-                  absolute inset-0 bg-gradient-to-t from-black/70 via-black/50 to-transparent
-                  opacity-0 group-hover:opacity-100 transition-opacity duration-300
-                "
+            <div className="relative">
+              <PlaceholderPanel
+                label="Case Study 03"
+                title="Women's Underwear Tailoring"
               />
             </div>
 
@@ -226,22 +200,22 @@ export function CampaignCaseStudySection() {
                 Multi-channel marketing
               </h3>
 
-              <p className="text-muted/60 text-sm mb-4">
+              <p className="text-muted-text text-sm mb-4">
                 Brand strategy & content planning
               </p>
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="font-method">Avg Orders/Month</p>
-                  <p className="text-accent-primary">~50</p>
+                  <p className="text-accent-ink">~50</p>
                 </div>
                 <div>
                   <p className="font-method">Avg Order Value</p>
-                  <p className="text-accent-primary">US$5</p>
+                  <p className="text-accent-ink">US$5</p>
                 </div>
               </div>
 
-              <p className="text-xs text-muted/50 mt-4">
+              <p className="text-xs text-muted-text mt-4">
                 Scope included brand strategy, content planning, consultation, and
                 multi-channel marketing. No ad-spend figure is supplied for this
                 case study.

@@ -1,6 +1,7 @@
 export function ExpertiseSection() {
   return (
     <section
+      id="expertise"
       className="py-24 md:py-32 bg-white dark:bg-bg-dark px-6 max-w-7xl mx-auto"
     >
       <div className="max-w-7xl mx-auto">
@@ -18,7 +19,7 @@ export function ExpertiseSection() {
           {/* META ADS & MEDIA BUYING */}
           <div>
             <h3 className="font-geist-sans text-xl font-bold mb-4">Meta Ads & Media Buying</h3>
-            <ul className="space-y-3 text-muted/70 text-sm">
+            <ul className="space-y-3 text-muted-text text-sm">
               <li>Campaign objectives & KPI planning</li>
               <li>Audience strategy & segmentation</li>
               <li>Media planning & channel selection</li>
@@ -32,7 +33,7 @@ export function ExpertiseSection() {
           {/* CONTENT STRATEGY */}
           <div>
             <h3 className="font-geist-sans text-xl font-bold mb-4">Content Strategy</h3>
-            <ul className="space-y-3 text-muted/70 text-sm">
+            <ul className="space-y-3 text-muted-text text-sm">
               <li>Content pillars & angles</li>
               <li>Content calendars & planning</li>
               <li>Copywriting & messaging</li>
@@ -45,7 +46,7 @@ export function ExpertiseSection() {
           {/* MARKETING ANALYSIS */}
           <div>
             <h3 className="font-geist-sans text-xl font-bold mb-4">Marketing Analysis</h3>
-            <ul className="space-y-3 text-muted/70 text-sm">
+            <ul className="space-y-3 text-muted-text text-sm">
               <li>Business & marketing objectives</li>
               <li>Audience research</li>
               <li>Competitor research</li>

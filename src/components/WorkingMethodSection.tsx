@@ -1,6 +1,7 @@
 export function WorkingMethodSection() {
   return (
     <section
+      id="approach"
       className="py-24 md:py-32 px-6 max-w-7xl mx-auto"
     >
       <div className="max-w-7xl mx-auto">
@@ -27,7 +28,7 @@ export function WorkingMethodSection() {
                 "
               >
                 <svg
-                  className="w-6 h-6 text-accent-primary"
+                  className="w-6 h-6 text-accent-ink"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -40,12 +41,12 @@ export function WorkingMethodSection() {
             </div>
 
             <h3 className="font-geist-sans text-2xl font-bold mb-4">01 - Diagnose</h3>
-            <p className="text-muted/60 text-base leading-relaxed mb-4">
+            <p className="text-muted-text text-base leading-relaxed mb-4">
               Understand the business problem, offer, market, and objective. I research
               the landscape, identify constraints, and clarify what success looks like
               before committing resources.
             </p>
-            <ul className="text-muted/60 text-sm space-y-2">
+            <ul className="text-muted-text text-sm space-y-2">
               <li>Business problem analysis</li>
               <li>Market & competitor research</li>
               <li>Objective clarification</li>
@@ -65,7 +66,7 @@ export function WorkingMethodSection() {
                 "
               >
                 <svg
-                  className="w-6 h-6 text-accent-primary"
+                  className="w-6 h-6 text-accent-ink"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -82,12 +83,12 @@ export function WorkingMethodSection() {
             </div>
 
             <h3 className="font-geist-sans text-2xl font-bold mb-4">02 - Strategize</h3>
-            <p className="text-muted/60 text-base leading-relaxed mb-4">
+            <p className="text-muted-text text-base leading-relaxed mb-4">
               Research audiences and competitors, define positioning, develop content
               pillars, and structure the campaign. Every decision is grounded in data
               and aligned with the business objective.
             </p>
-            <ul className="text-muted/60 text-sm space-y-2">
+            <ul className="text-muted-text text-sm space-y-2">
               <li>Audience & competitor research</li>
               <li>Positioning & messaging</li>
               <li>Content pillars development</li>
@@ -107,7 +108,7 @@ export function WorkingMethodSection() {
                 "
               >
                 <svg
-                  className="w-6 h-6 text-accent-primary"
+                  className="w-6 h-6 text-accent-ink"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -120,12 +121,12 @@ export function WorkingMethodSection() {
             </div>
 
             <h3 className="font-geist-sans text-2xl font-bold mb-4">03 - Plan</h3>
-            <p className="text-muted/60 text-base leading-relaxed mb-4">
+            <p className="text-muted-text text-base leading-relaxed mb-4">
               Align creative direction, media planning, budget, and measurement. I map
               out the creative assets, select the channels, set the budget, and define
               the KPIs that will guide optimization.
             </p>
-            <ul className="text-muted/60 text-sm space-y-2">
+            <ul className="text-muted-text text-sm space-y-2">
               <li>Creative direction</li>
               <li>Media planning & channel mix</li>
               <li>Budget allocation</li>
@@ -145,7 +146,7 @@ export function WorkingMethodSection() {
                 "
               >
                 <svg
-                  className="w-6 h-6 text-accent-primary"
+                  className="w-6 h-6 text-accent-ink"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -161,12 +162,12 @@ export function WorkingMethodSection() {
             </div>
 
             <h3 className="font-geist-sans text-2xl font-bold mb-4">04 - Optimize</h3>
-            <p className="text-muted/60 text-base leading-relaxed mb-4">
+            <p className="text-muted-text text-base leading-relaxed mb-4">
               Monitor available signals, identify opportunities, and improve based on
               evidence. I track performance data, identify underperforming elements,
               and iterate systematically.
             </p>
-            <ul className="text-muted/60 text-sm space-y-2">
+            <ul className="text-muted-text text-sm space-y-2">
               <li>Performance monitoring</li>
               <li>Opportunity identification</li>
               <li>Data-driven iteration</li>

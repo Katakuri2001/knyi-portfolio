@@ -1,4 +1,4 @@
-import { SiteNavigation } from "@//components/SiteNavigation";
+import { SiteNavigation } from "@/components/SiteNavigation";
 import { HeroSection } from "@//components/HeroSection";
 import { AboutSection } from "@//components/AboutSection";
 import { ExpertiseSection } from "@/components/ExpertiseSection";
@@ -11,7 +11,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 
 export default function Home() {
   return (
-    <main className="flex-1">
+    <div className="flex-1">
       <SiteNavigation />
 
       <HeroSection />
@@ -31,6 +31,6 @@ export default function Home() {
       <ContactSection />
 
       <SiteFooter />
-    </main>
+    </div>
   );
 }

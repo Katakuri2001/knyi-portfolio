@@ -1,6 +1,7 @@
 export function AboutSection() {
   return (
     <section
+      id="about"
       className="py-24 md:py-32 bg-background px-6 max-w-7xl mx-auto"
     >
       <div className="max-w-3xl mx-auto text-center">
@@ -22,23 +23,23 @@ export function AboutSection() {
 
         <div className="grid grid-cols-2 gap-6 md:grid-cols-3 justify-center">
           <div>
-            <p className="font-medium text-accent-primary text-sm uppercase tracking-wider mb-2">BACKGROUND</p>
-            <p className="text-muted/60 text-sm">
+            <p className="font-medium text-accent-ink text-sm uppercase tracking-wider mb-2">BACKGROUND</p>
+            <p className="text-muted-text text-sm">
               Freelance content writing and Facebook marketing experience from 2023-2026,
               with a developing specialization in performance marketing.
             </p>
           </div>
           <div>
-            <p className="font-medium text-accent-primary text-sm uppercase tracking-wider mb-2">HOW I THINK</p>
-            <p className="text-muted/60 text-sm">
+            <p className="font-medium text-accent-ink text-sm uppercase tracking-wider mb-2">HOW I THINK</p>
+            <p className="text-muted-text text-sm">
               Research-led approach. I always start by understanding the business
               problem, the audience, and the competitive landscape before developing
               strategy.
             </p>
           </div>
           <div>
-            <p className="font-medium text-accent-primary text-sm uppercase tracking-wider mb-2">WHAT I VALUE</p>
-            <p className="text-muted/60 text-sm">
+            <p className="font-medium text-accent-ink text-sm uppercase tracking-wider mb-2">WHAT I VALUE</p>
+            <p className="text-muted-text text-sm">
               Strategic thinking, creative quality, and data-driven optimization.
               Results that serve the business objective.
             </p>

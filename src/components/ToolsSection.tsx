@@ -1,6 +1,7 @@
 export function ToolsSection() {
   return (
     <section
+      id="tools"
       className="py-24 md:py-32 bg-background px-6 max-w-7xl mx-auto"
     >
       <div className="max-w-7xl mx-auto">
@@ -18,10 +19,10 @@ export function ToolsSection() {
           {/* PRACTICAL EXPOSURE */}
           <div>
             <h3 className="font-geist-sans text-xl font-bold mb-6">Practical Exposure</h3>
-            <ul className="space-y-3 text-muted/70 text-sm">
+            <ul className="space-y-3 text-muted-text text-sm">
               <li className="flex items-start gap-2">
                 <svg
-                  className="w-4 h-4 text-accent-primary mt-0.5 flex-shrink-0"
+                  className="w-4 h-4 text-accent-ink mt-0.5 flex-shrink-0"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -35,7 +36,7 @@ export function ToolsSection() {
               </li>
               <li className="flex items-start gap-2">
                 <svg
-                  className="w-4 h-4 text-accent-primary mt-0.5 flex-shrink-0"
+                  className="w-4 h-4 text-accent-ink mt-0.5 flex-shrink-0"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -47,7 +48,7 @@ export function ToolsSection() {
               </li>
               <li className="flex items-start gap-2">
                 <svg
-                  className="w-4 h-4 text-accent-primary mt-0.5 flex-shrink-0"
+                  className="w-4 h-4 text-accent-ink mt-0.5 flex-shrink-0"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -59,7 +60,7 @@ export function ToolsSection() {
               </li>
               <li className="flex items-start gap-2">
                 <svg
-                  className="w-4 h-4 text-accent-primary mt-0.5 flex-shrink-0"
+                  className="w-4 h-4 text-accent-ink mt-0.5 flex-shrink-0"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -71,7 +72,7 @@ export function ToolsSection() {
               </li>
               <li className="flex items-start gap-2">
                 <svg
-                  className="w-4 h-4 text-accent-primary mt-0.5 flex-shrink-0"
+                  className="w-4 h-4 text-accent-ink mt-0.5 flex-shrink-0"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -85,7 +86,7 @@ export function ToolsSection() {
               </li>
               <li className="flex items-start gap-2">
                 <svg
-                  className="w-4 h-4 text-accent-primary mt-0.5 flex-shrink-0"
+                  className="w-4 h-4 text-accent-ink mt-0.5 flex-shrink-0"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -98,7 +99,7 @@ export function ToolsSection() {
               </li>
               <li className="flex items-start gap-2">
                 <svg
-                  className="w-4 h-4 text-accent-primary mt-0.5 flex-shrink-0"
+                  className="w-4 h-4 text-accent-ink mt-0.5 flex-shrink-0"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -117,10 +118,10 @@ export function ToolsSection() {
           {/* CURRENTLY LEARNING */}
           <div>
             <h3 className="font-geist-sans text-xl font-bold mb-6">Currently Learning</h3>
-            <ul className="space-y-3 text-muted/70 text-sm">
+            <ul className="space-y-3 text-muted-text text-sm">
               <li className="flex items-start gap-2">
                 <svg
-                  className="w-4 h-4 text-accent-primary/50 mt-0.5 flex-shrink-0 opacity-50"
+                  className="w-4 h-4 text-muted-text mt-0.5 flex-shrink-0 opacity-70"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -133,7 +134,7 @@ export function ToolsSection() {
               </li>
               <li className="flex items-start gap-2">
                 <svg
-                  className="w-4 h-4 text-accent-primary/50 mt-0.5 flex-shrink-0 opacity-50"
+                  className="w-4 h-4 text-muted-text mt-0.5 flex-shrink-0 opacity-70"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -147,7 +148,7 @@ export function ToolsSection() {
               </li>
               <li className="flex items-start gap-2">
                 <svg
-                  className="w-4 h-4 text-accent-primary/50 mt-0.5 flex-shrink-0 opacity-50"
+                  className="w-4 h-4 text-muted-text mt-0.5 flex-shrink-0 opacity-70"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -159,7 +160,7 @@ export function ToolsSection() {
               </li>
               <li className="flex items-start gap-2">
                 <svg
-                  className="w-4 h-4 text-accent-primary/50 mt-0.5 flex-shrink-0 opacity-50"
+                  className="w-4 h-4 text-muted-text mt-0.5 flex-shrink-0 opacity-70"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -173,7 +174,7 @@ export function ToolsSection() {
               </li>
               <li className="flex items-start gap-2">
                 <svg
-                  className="w-4 h-4 text-accent-primary/50 mt-0.5 flex-shrink-0 opacity-50"
+                  className="w-4 h-4 text-muted-text mt-0.5 flex-shrink-0 opacity-70"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"

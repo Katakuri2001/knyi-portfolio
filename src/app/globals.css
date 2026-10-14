@@ -1,21 +1,84 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  --background: rgb(230, 233, 238);
-  --foreground: rgb(0, 5, 10);
+/* Design tokens.
+   Tailwind v4 reads @theme, not tailwind.config.ts — this block is the single
+   source of truth for the palette defined in AGENTS.md / PROJECT-SUMMARY.md. */
+@theme {
+  /* Surfaces */
+  --color-background: rgb(230, 233, 238); /* light grey-blue */
+  --color-bg-dark: rgb(0, 5, 10);
+  --color-bg-muted: rgb(201, 209, 212);
+
+  /* Text */
+  --color-foreground: rgb(47, 47, 47);
+  --color-muted: rgb(100, 100, 100);
+  /* Text on dark surfaces (footer, contact, hero badge). */
+  --color-on-dark: rgb(230, 233, 238);
+  --color-on-dark-muted: rgb(150, 158, 165);
+
+  /* Derived from --color-muted and darkened until it clears WCAG AA (4.5:1)
+     against --color-background. The raw muted grey only reached ~2.3:1. */
+  --color-muted-text: rgb(74, 80, 86);
+  /* Eyebrow teal. The brand accent is far too light to read on the light
+     surface, so this darker variant carries text while rgb(54,236,223) stays
+     reserved for dark backgrounds. */
+  --color-accent-ink: rgb(13, 116, 110);
+
+  /* Accents */
+  --color-accent-primary: rgb(54, 236, 223); /* vivid teal */
+  --color-accent-secondary: rgb(2, 31, 63); /* deep teal */
+
+  /* Lines */
+  --color-border: rgb(201, 209, 212);
+
+  /* Type */
+  --font-geist-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-geist-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-method: var(--font-geist-mono), ui-monospace, monospace;
 }
 
+/* Dark scheme is opt-in via the OS preference. Tokens are overridden rather
+   than hard-coded so every utility that references var(--color-*) follows. */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: rgb(0, 5, 10);
-    --foreground: rgb(230, 233, 238);
+    --color-background: rgb(0, 5, 10);
+    --color-foreground: rgb(230, 233, 238);
+    --color-muted: rgb(150, 158, 165);
+    --color-muted-text: rgb(168, 176, 183);
+    --color-border: rgb(38, 44, 51);
+    --color-bg-muted: rgb(18, 24, 30);
+    --color-on-dark: rgb(230, 233, 238);
+    --color-on-dark-muted: rgb(168, 176, 183);
+    --color-accent-ink: rgb(94, 234, 212);
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-geist-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Visible focus for keyboard users on every interactive element. */
+:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Anchor targets clear the fixed navigation bar. */
+section[id] {
+  scroll-margin-top: 5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

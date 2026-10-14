@@ -1,9 +1,10 @@
-import Image from "next/image";
+import { PlaceholderPanel } from "@/components/PlaceholderPanel";
 
 export function HeroSection() {
   return (
     <section
-      className="min-h-[60vh] relative flex items-center justify-center overflow-hidden px-6 py-24 md:py-32"
+      id="top"
+      className="min-h-[60vh] relative flex items-center justify-center overflow-hidden px-6 pt-32 pb-24 md:pt-40 md:pb-32"
     >
       <div className="max-w-7xl w-full flex flex-col items-center md:flex-row md:items-start md:w-[90%] gap-8">
         <div className="text-center md:text-left w-full md:w-1/2">
@@ -26,19 +27,19 @@ export function HeroSection() {
           <div className="flex flex-col sm:flex-row gap-4">
             <a
               className="
-                font-geist-sans text-accent-primary text-base font-medium
-                px-6 py-3 rounded-full border border-accent-primary/30
-                transition-colors hover:bg-accent-primary/10
+                font-geist-sans text-on-dark text-base font-medium
+                px-6 py-3 rounded-full bg-accent-secondary
+                transition-transform hover:-translate-y-0.5
               "
-              href="#work"
+              href="#campaigns"
             >
               Explore My Work
             </a>
             <a
               className="
                 font-geist-sans text-foreground text-base font-medium
-                px-6 py-3 rounded-full border border-border/40
-                transition-colors hover:bg-border/10
+                px-6 py-3 rounded-full border border-foreground/25
+                transition-colors hover:border-foreground/50 hover:bg-foreground/5
               "
               href="#contact"
             >
@@ -47,15 +48,12 @@ export function HeroSection() {
           </div>
         </div>
 
-        <div className="relative w-full md:w-1/2 hidden md:block">
-          <Image
-            src="/knyi-portrait-placeholder.jpg"
-            alt="Khant Nyi Nyi - Performance Marketer"
-            className="rounded-2xl object-cover w-full h-[450px] md:h-[550px] transition-opacity duration-500 hover:opacity-90"
-            width={800}
-            height={1000}
-            priority
-            loading="lazy"
+        <div className="relative w-full md:w-1/2">
+          <PlaceholderPanel
+            aspect="portrait"
+            label="Portrait"
+            title="Khant Nyi Nyi"
+            detail="Performance marketer, Yangon"
           />
         </div>
       </div>

@@ -1,6 +1,7 @@
 export function EducationSection() {
   return (
     <section
+      id="education"
       className="py-24 md:py-32 px-6 max-w-7xl mx-auto"
     >
       <div className="max-w-7xl mx-auto">
@@ -17,38 +18,38 @@ export function EducationSection() {
         <div className="grid grid-cols-2 gap-6">
           <div>
             <h3 className="font-geist-sans text-xl font-bold mb-4">Completed Training</h3>
-            <ul className="space-y-3 text-muted/70 text-sm">
+            <ul className="space-y-3 text-muted-text text-sm">
               <li>
                 <p className="font-medium">Content Writing</p>
-                <p className="text-muted/60">The Burmese Content Academy, 2025</p>
+                <p className="text-muted-text">The Burmese Content Academy, 2025</p>
               </li>
               <li>
                 <p className="font-medium">Graphic Design</p>
-                <p className="text-muted/60">Donato, 2023</p>
+                <p className="text-muted-text">Donato, 2023</p>
               </li>
               <li>
                 <p className="font-medium">Digital Marketing Basic</p>
-                <p className="text-muted/60">Digital Face, 2024</p>
+                <p className="text-muted-text">Digital Face, 2024</p>
               </li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-geist-sans text-xl font-bold mb-4">Currently Studying</h3>
-            <ul className="space-y-3 text-muted/70 text-sm">
+            <ul className="space-y-3 text-muted-text text-sm">
               <li>
                 <p className="font-medium">Digital Marketing Advanced</p>
-                <p className="text-muted/60">Ye Htet</p>
+                <p className="text-muted-text">Ye Htet</p>
               </li>
               <li>
                 <p className="font-medium">Digital Marketing Advanced</p>
-                <p className="text-muted/60">Bagan Digital Institute</p>
+                <p className="text-muted-text">Bagan Digital Institute</p>
               </li>
             </ul>
           </div>
         </div>
 
-        <p className="mt-8 text-sm text-muted/60">
+        <p className="mt-8 text-sm text-muted-text">
           Second-year university studies, discontinued before graduation.
         </p>
       </div>

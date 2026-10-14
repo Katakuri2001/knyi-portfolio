@@ -1,0 +1,20 @@
+{
+  "metaAds": {
+    "title": "Meta Ads & Media Buying",
+    "description": "Campaign objectives, audience strategy, media planning, budget allocation, creative testing direction, retargeting concepts, KPI planning, CPM, CTR, CPC, CPA, and ROAS analysis",
+    "experience": "Practical exposure with Meta Ads Manager, Facebook Marketing, Meta Pixel, and UTM parameters",
+    "learning": "Currently learning: GA4, GTM, Google Ads/SEM, TikTok Ads, SEO fundamentals"
+  },
+  "contentStrategy": {
+    "title": "Content Strategy",
+    "description": "Content pillars, content angles, content calendars, copywriting, audience-focused messaging, funnel planning, content and advertising alignment",
+    "experience": "Practical experience with Canva, Google Sheets, and ChatGPT for content creation and planning",
+    "learning": "Advanced measurement and optimization workflows"
+  },
+  "marketingAnalysis": {
+    "title": "Marketing Analysis",
+    "description": "Business and marketing objectives, audience research, competitor research, offer analysis, customer journey thinking, funnel strategy, problem identification",
+    "experience": "Practical exposure with Google Sheets for analysis and reporting",
+    "learning": "Advanced analytics workflows including GA4, GTM"
+  }
+}

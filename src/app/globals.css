@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: rgb(230, 233, 238);
+  --foreground: rgb(0, 5, 10);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: rgb(0, 5, 10);
+    --foreground: rgb(230, 233, 238);
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}

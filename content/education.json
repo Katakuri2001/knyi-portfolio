@@ -1,0 +1,32 @@
+{
+  "completed": [
+    {
+      "name": "Content Writing",
+      "institution": "The Burmese Content Academy",
+      "year": 2025
+    },
+    {
+      "name": "Graphic Design",
+      "institution": "Donato",
+      "year": 2023
+    },
+    {
+      "name": "Digital Marketing Basic",
+      "institution": "Digital Face",
+      "year": 2024
+    }
+  ],
+  "currentlyStudying": [
+    {
+      "name": "Digital Marketing Advanced",
+      "institution": "Ye Htet"
+    },
+    {
+      "name": "Digital Marketing Advanced",
+      "institution": "Bagan Digital Institute"
+    }
+  ],
+  "university": {
+    "status": "Second-year university studies, discontinued before graduation"
+  }
+}

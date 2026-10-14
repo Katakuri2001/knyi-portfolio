@@ -1,0 +1,44 @@
+[
+  {
+    "id": "a",
+    "title": "Modular Building Business",
+    "category": "Modular Building Business",
+    "platform": "Meta advertising",
+    "adSpend": "US$160",
+    "duration": "2 months",
+    "audienceGrowth": "0 → ~300 followers",
+    "orders": "1 order",
+    "scope": "content strategy, research, positioning, media planning, and campaign execution",
+    "reported": true,
+    "verified": false,
+    "methodologyNote": "Results are reported or estimated from the available project figures. They have not been independently verified, and advertising-attributed revenue is not claimed."
+  },
+  {
+    "id": "b",
+    "title": "Ready-Made Paratha Business",
+    "category": "Ready-Made Paratha Business",
+    "platform": "Meta advertising",
+    "adSpend": "US$170",
+    "duration": "2 months",
+    "audienceGrowth": "0 → ~2,000 followers",
+    "orders": "~200 orders",
+    "averageOrderValue": "US$3",
+    "scope": "content strategy, research, positioning, media planning, and campaign execution",
+    "reported": true,
+    "verified": false,
+    "methodologyNote": "Results are reported or estimated from the available project figures. They have not been independently verified, and advertising-attributed revenue is not claimed."
+  },
+  {
+    "id": "c",
+    "title": "Women's Underwear Tailoring",
+    "category": "Women's Underwear Tailoring",
+    "platform": "Multi-channel marketing",
+    "adSpend": null,
+    "averageOrdersPerMonth": "~50",
+    "averageOrderValue": "US$5",
+    "scope": "brand strategy, content planning, consultation, and multi-channel marketing",
+    "reported": true,
+    "verified": false,
+    "methodologyNote": "Scope included brand strategy, content planning, consultation, and multi-channel marketing. No ad-spend figure is supplied for this case study."
+  }
+]

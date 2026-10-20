@@ -82,20 +82,38 @@ export function isSameOrigin(request: NextRequest): boolean {
   }
 }
 
-export function setSessionCookie(response: NextResponse) {
+/**
+ * Whether the request arrived over HTTPS.
+ *
+ * This is derived from the request, **not** from `NODE_ENV`. A production
+ * build served over plain HTTP — which is what `npm start` on a laptop is —
+ * would otherwise set a `Secure` cookie that the browser refuses to store,
+ * making the console impossible to sign in to. Behind a proxy the
+ * `x-forwarded-proto` header is what carries the real protocol.
+ */
+export function isSecureRequest(request: {
+  headers: Headers;
+  nextUrl: URL;
+}): boolean {
+  const forwarded = request.headers.get("x-forwarded-proto");
+  const protocol = forwarded?.split(",")[0]?.trim() ?? request.nextUrl.protocol;
+  return protocol === "https" || protocol === "https:";
+}
+
+export function setSessionCookie(response: NextResponse, secure: boolean) {
   response.cookies.set(ADMIN_COOKIE, sessionToken(), {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure,
     sameSite: "strict",
     path: "/",
     maxAge: MAX_AGE_SECONDS,
   });
 }
 
-export function clearSessionCookie(response: NextResponse) {
+export function clearSessionCookie(response: NextResponse, secure: boolean) {
   response.cookies.set(ADMIN_COOKIE, "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure,
     sameSite: "strict",
     path: "/",
     maxAge: 0,

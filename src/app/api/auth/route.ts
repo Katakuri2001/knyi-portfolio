@@ -5,6 +5,7 @@ import {
   clearSessionCookie,
   hasValidSession,
   isSameOrigin,
+  isSecureRequest,
   passwordMatches,
   setSessionCookie,
 } from "@/lib/auth";
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     if (passwordMatches(password)) {
       const response = NextResponse.json({ success: true });
-      setSessionCookie(response);
+      setSessionCookie(response, isSecureRequest(request));
       return response;
     }
 
@@ -46,6 +47,6 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Cross-origin request rejected" }, { status: 403 });
   }
   const response = NextResponse.json({ success: true });
-  clearSessionCookie(response);
+  clearSessionCookie(response, isSecureRequest(request));
   return response;
 }

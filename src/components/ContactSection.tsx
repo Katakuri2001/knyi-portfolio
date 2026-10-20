@@ -1,4 +1,5 @@
 import { SectionMarker } from "@/components/editorial";
+import { ContactForm } from "@/components/ContactForm";
 import { Reveal } from "@/components/Reveal";
 import { getProfile } from "@/lib/content";
 
@@ -127,6 +128,25 @@ export function ContactSection() {
                 </ul>
               </div>
             </Reveal>
+          </div>
+        </div>
+
+        {/* The enquiry form. This is the conversion path the console measures. */}
+        <div className="mt-16 border-t border-white/14 pt-10 md:mt-20">
+          <div className="grid gap-x-10 gap-y-8 lg:grid-cols-12">
+            <div className="lg:col-span-4">
+              <p className="text-eyebrow text-accent-primary">
+                Send an enquiry
+              </p>
+              <p className="mt-4 text-[0.9375rem] leading-relaxed text-on-dark-muted">
+                Tell me what you are running and what is not working. The more
+                specific you are, the more useful the first reply will be.
+              </p>
+            </div>
+
+            <div className="lg:col-span-8">
+              <ContactForm />
+            </div>
           </div>
         </div>
       </div>

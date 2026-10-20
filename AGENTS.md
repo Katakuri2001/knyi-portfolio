@@ -28,20 +28,37 @@ Premium personal portfolio website for Khant Nyi Nyi (K-Nyi), performance market
 - `npm run build` — build production (Turbopack)
 - `npm run lint` — ESLint type-check
 - `npx tsc --noEmit` — TypeScript check
+- `npm test` — the test suite (Node's built-in runner, no test framework)
+- `npm run migrate` — apply the database migrations
+- `npm run prune` — apply the analytics retention policy (run from cron)
 - `npm run build:pages` — static export for GitHub Pages into ./out
 - `npm run deploy:pages` — build the export and publish it to the gh-pages branch
 
+## Database
+SQLite, at `./data/knyi.db`, through `better-sqlite3`. It holds the **generated
+and transactional** data: leads, lead notes, analytics events, sessions, campaign
+observations, SEO audit runs and issues, SEO metadata overrides, experiments, and
+integration state.
+
+The **reviewed portfolio content** stays in `content/*.json` — profile, services,
+tools, education, case studies. That content is versioned in git and read at
+render time; it is not a write-heavy workload and does not need a database.
+
+Every module under `src/lib/db/` carries `import "server-only"`, so a client
+component cannot pull the database into the browser bundle. Types live in
+`src/lib/db/types.ts`, which is safe to import from either side.
+
 ## Deployment
-- **Live at https://katakuri2001.github.io/knyi-portfolio/** — published from the
-  `gh-pages` branch.
-- The published site is the **public page only**. GitHub Pages cannot run a
-  server, so `/admin` and `/api/*` are not deployed. Edit content locally
-  (or in the local console), commit, and push.
+- The **public page** is live at https://katakuri2001.github.io/knyi-portfolio/ —
+  published from the `gh-pages` branch.
+- The **console, the contact form and event ingestion need a server** and are not
+  on GitHub Pages. A `Dockerfile` and `docker-compose.yml` are provided for a Node
+  host; the database lives on a mounted volume at `/app/data`.
 - `.github/workflows/deploy-pages.yml` is the automatic route, but it is blocked
-  by a **billing lock on the GitHub account** — every workflow fails with "The
-  job was not started because your account is locked due to a billing issue".
-  Once billing is cleared, switch Settings → Pages → Source to "GitHub Actions".
-- See `docs/STAGE-4-GITHUB-PAGES.md`.
+  by a **billing lock on the GitHub account** — every workflow fails with "The job
+  was not started because your account is locked due to a billing issue". Once
+  billing is cleared, switch Settings → Pages → Source to "GitHub Actions".
+- See `docs/STAGE-4-GITHUB-PAGES.md` and `docs/STAGE-6-MARKETING-INTELLIGENCE.md`.
 
 ## Authentication
 - Admin console: `/admin` — sign in with `ADMIN_PASSWORD` from the environment
@@ -50,9 +67,23 @@ Premium personal portfolio website for Khant Nyi Nyi (K-Nyi), performance market
 - Sign out: GET `/api/auth/signout` (or DELETE `/api/auth`)
 
 ## Admin Console
-`/admin` manages the case studies behind the public Work section: create, edit,
-delete, reorder, and upload a campaign image. Changes write to
-`content/case-studies.json` and regenerate the public page.
+`/admin` — a marketing intelligence console with eleven sections: Overview,
+Analytics, SEO intelligence, Acquisition & campaigns, Conversions & leads, Audience
+intelligence, Content & case studies, Experiments & optimisation, Integrations,
+Reports, and Settings.
+
+- The case-study editor is unchanged in capability — create, edit, delete, reorder,
+  and upload a campaign image with alt text.
+- The public contact form feeds the lead pipeline, with attribution recorded at the
+  moment of submission.
+- Every content write calls `revalidatePath("/")`, so a change reaches the public
+  site on the next request.
+- **Never** link to a route handler with `next/link` — Next prefetches the target,
+  which *executes* a GET route handler. Use a button instead. This is how the
+  console's own sign-out was silently deleting the session.
+- The full audit, the backlog and the open decisions are in
+  `docs/STAGE-6-MARKETING-INTELLIGENCE.md`, and the earlier console audit is in
+  `docs/STAGE-5-ADMIN-CONSOLE-BACKLOG.md`.
 
 - Requires `ADMIN_PASSWORD`; see `docs/STAGE-3-PORTRAIT-RAIL-ADMIN.md`
 - Uploads are written to `public/uploads/` and served from `/api/uploads/<name>`

@@ -1,8 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { withBasePath } from "@/lib/paths";
 import { useState, type FormEvent } from "react";
 import type { CaseStudy } from "@/lib/content";
 import {
@@ -24,10 +22,8 @@ type Status = { tone: "ok" | "error"; message: string } | null;
  */
 export function CaseStudyManager({
   initial,
-  onSignOut,
 }: {
   initial: CaseStudy[];
-  onSignOut: () => void;
 }) {
   const [studies, setStudies] = useState<CaseStudy[]>(initial);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -224,53 +220,8 @@ export function CaseStudyManager({
     }
   }
 
-  async function signOut() {
-    await fetch("/api/auth/signout", { method: "GET" }).catch(() => {});
-    onSignOut();
-  }
-
   return (
-    <>
-      <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-sm">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <Image
-              src={withBasePath("/images/mark-k-nyi.png")}
-              alt=""
-              width={28}
-              height={28}
-              className="h-7 w-7 flex-none"
-              priority
-            />
-            <span className="flex flex-col">
-              <span className="text-[0.8125rem] font-semibold tracking-tight text-accent-secondary">
-                K-Nyi — Admin
-              </span>
-              <span className="text-meta text-muted-text">
-                Selected campaigns
-              </span>
-            </span>
-          </div>
-
-          <div className="flex items-center gap-5">
-            <Link
-              href="/#campaigns"
-              className="text-[0.8125rem] text-muted-text underline-offset-4 transition-colors hover:text-accent-ink hover:underline"
-            >
-              View Work section
-            </Link>
-            <button
-              type="button"
-              onClick={signOut}
-              className="text-[0.8125rem] text-muted-text underline-offset-4 transition-colors hover:text-accent-ink hover:underline"
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto w-full max-w-6xl px-6 py-12 md:py-16">
+    <div className="space-y-4">
         <div className="rule-ink pt-4">
           <span className="text-meta font-medium tracking-[0.18em] text-accent-ink">
             01
@@ -467,7 +418,6 @@ export function CaseStudyManager({
         </p>
 
         <span className="sr-only" data-reload={reload} />
-      </main>
-    </>
+      </div>
   );
 }

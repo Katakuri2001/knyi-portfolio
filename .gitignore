@@ -15,6 +15,8 @@
 
 # next.js
 /.next/
+/.next-pages/
+/.pages-build/
 /out/
 
 # production
@@ -36,6 +38,9 @@ yarn-error.log*
 
 # static export scratch (scripts/build-pages.mjs)
 .pages-stash/
+
+# the analytics + leads database (runtime data, not source)
+/data/
 
 # cloudflare workers / opennext local secrets (NOT covered by .env*)
 .dev.vars

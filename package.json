@@ -9,15 +9,22 @@
     "lint": "eslint",
     "build:pages": "node scripts/build-pages.mjs",
     "serve:pages": "npx --yes serve@14 out",
-    "deploy:pages": "node scripts/deploy-pages.mjs"
+    "deploy:pages": "node scripts/deploy-pages.mjs",
+    "test": "node --conditions=react-server --experimental-strip-types --test \"tests/**/*.test.ts\"",
+    "migrate": "node --conditions=react-server --experimental-strip-types scripts/migrate.mjs",
+    "prune": "node --conditions=react-server --experimental-strip-types scripts/prune-events.mjs"
   },
   "dependencies": {
+    "@emnapi/runtime": "^1.11.3",
+    "better-sqlite3": "^12.4.1",
     "next": "16.4.0",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -26,5 +33,6 @@
     "playwright": "^1.64.0",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "type": "module"
 }

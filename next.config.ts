@@ -21,9 +21,15 @@ const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
+  // better-sqlite3 is a native module — it must not be bundled.
+  serverExternalPackages: ["better-sqlite3"],
+
   ...(isPages
     ? {
         output: "export" as const,
+        // A separate build directory, so exporting for Pages can never
+        // overwrite the server build that `npm start` is running from.
+        distDir: ".next-pages",
         // A project Pages site lives under a sub-path; a custom domain does
         // not. Set NEXT_PUBLIC_BASE_PATH to "" once a domain is attached.
         ...(basePath

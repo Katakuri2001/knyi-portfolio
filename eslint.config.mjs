@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The GitHub Pages export builds into its own directory.
+    ".next-pages/**",
+    // The runtime database is not source.
+    "data/**",
   ]),
 ]);
 

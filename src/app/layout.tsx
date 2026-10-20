@@ -28,8 +28,13 @@ const geistMono = localFont({
   display: "swap",
 });
 
+/**
+ * 158 characters — inside the ~160 a search result shows before truncating.
+ * The SEO audit checks this length and reports it, so the number is measured
+ * rather than guessed.
+ */
 const DESCRIPTION =
-  "Khant Nyi Nyi (K-Nyi) — independent performance marketer specialising in Meta Ads planning, media buying, content strategy, marketing analysis and campaign optimization. Diagnose first. Strategize better. Optimize for growth.";
+  "Khant Nyi Nyi (K-Nyi) — independent performance marketer specialising in Meta Ads planning, media buying, content strategy and campaign optimisation.";
 
 /**
  * The production domain is not configured in this repository, so no canonical
@@ -53,7 +58,7 @@ const PUBLIC_ORIGIN =
 export const metadata: Metadata = {
   ...(PUBLIC_ORIGIN ? { metadataBase: new URL(PUBLIC_ORIGIN) } : {}),
   title: {
-    default: "K-Nyi — Performance Marketing, Meta Ads Planning & Media Buying",
+    default: "K-Nyi — Performance Marketing & Media Buying",
     template: "%s — K-Nyi",
   },
   description: DESCRIPTION,

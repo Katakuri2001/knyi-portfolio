@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import { Figure } from "@/components/editorial";
 import type { CaseStudy } from "@/lib/content";
+import { withBasePath } from "@/lib/paths";
 
 /**
  * The visual for one case study.
@@ -38,7 +39,7 @@ export function CaseVisual({
     return (
       <Figure ratio={ratio} caption={caption} captionTone={captionTone}>
         <Image
-          src={study.image}
+          src={withBasePath(study.image)}
           alt={alt}
           fill
           unoptimized

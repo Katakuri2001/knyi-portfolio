@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "build:pages": "node scripts/build-pages.mjs",
+    "serve:pages": "npx --yes serve@14 out"
   },
   "dependencies": {
     "next": "16.4.0",

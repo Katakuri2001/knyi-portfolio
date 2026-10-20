@@ -39,8 +39,19 @@ const DESCRIPTION =
  */
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "");
 
+/**
+ * The absolute origin the site is served from, used to resolve Open Graph and
+ * Twitter image URLs. On GitHub Pages that is
+ * `https://<user>.github.io/<repo>`, so it carries the base path too.
+ */
+const PUBLIC_ORIGIN =
+  SITE_URL ??
+  (process.env.NEXT_PUBLIC_BASE_PATH
+    ? `https://katakuri2001.github.io${process.env.NEXT_PUBLIC_BASE_PATH}`
+    : undefined);
+
 export const metadata: Metadata = {
-  ...(SITE_URL ? { metadataBase: new URL(SITE_URL) } : {}),
+  ...(PUBLIC_ORIGIN ? { metadataBase: new URL(PUBLIC_ORIGIN) } : {}),
   title: {
     default: "K-Nyi — Performance Marketing, Meta Ads Planning & Media Buying",
     template: "%s — K-Nyi",
@@ -63,6 +74,9 @@ export const metadata: Metadata = {
     follow: true,
     googleBot: { index: true, follow: true, "max-image-preview": "large" },
   },
+  // Only emitted when the origin is actually known — inventing a canonical
+  // URL would be worse than omitting one.
+  ...(PUBLIC_ORIGIN ? { alternates: { canonical: "/" } } : {}),
   openGraph: {
     type: "profile",
     siteName: "K-Nyi Portfolio",

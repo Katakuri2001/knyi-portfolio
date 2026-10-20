@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Figure, SectionMarker } from "@/components/editorial";
 import { Reveal } from "@/components/Reveal";
 import { getProfile } from "@/lib/content";
+import { withBasePath } from "@/lib/paths";
 
 /**
  * Hero — asymmetric editorial opening.
@@ -118,7 +119,7 @@ export function HeroSection() {
               <div className="relative">
                 <Figure ratio="4 / 5" className="overflow-hidden">
                   <Image
-                    src="/images/portrait-k-nyi.jpg"
+                    src={withBasePath("/images/portrait-k-nyi.jpg")}
                     alt="Khant Nyi Nyi, independent performance marketer, photographed outdoors against green hills"
                     fill
                     priority

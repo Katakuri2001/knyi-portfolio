@@ -167,6 +167,16 @@
    floating rail — an app surface needs a fixed header, not a scroll-affect­
    ing one.
    --------------------------------------------------------------------------- */
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  /* Body copy inherits Geist. Tailwind's preflight sets the system stack on
+     `html`, so without this rule every paragraph outside a `font-*` utility
+     would silently render in the fallback face. */
+  font-family: var(--font-geist-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
 .admin-frame {
   min-height: 100dvh;
   background: var(--color-background);

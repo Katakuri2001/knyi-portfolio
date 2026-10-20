@@ -34,6 +34,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# static export scratch (scripts/build-pages.mjs)
+.pages-stash/
+
 # cloudflare workers / opennext local secrets (NOT covered by .env*)
 .dev.vars
 .dev.vars.*

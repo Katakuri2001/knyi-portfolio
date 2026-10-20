@@ -1,0 +1,68 @@
+name: Deploy to GitHub Pages
+
+# The public site is a static export. Every push to main rebuilds it and
+# publishes it to GitHub Pages.
+#
+# The admin console and the API routes need a server and are not part of the
+# export — see scripts/build-pages.mjs. Content changes therefore ship by
+# commit: edit content/case-studies.json (or use the console locally), push,
+# and the site rebuilds.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deployments race. A newer push supersedes an in-flight one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build static export
+        env:
+          # A GitHub Pages project site is served from /<repository>/.
+          # Once a custom domain is attached, set this to an empty string.
+          NEXT_PUBLIC_BASE_PATH: /knyi-portfolio
+          # The absolute origin, used for the canonical URL and social images.
+          NEXT_PUBLIC_SITE_URL: https://katakuri2001.github.io/knyi-portfolio
+        run: npm run build:pages
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

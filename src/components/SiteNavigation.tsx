@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import {
   useCallback,
@@ -10,6 +11,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
+import { withBasePath } from "@/lib/paths";
 
 /* ---------------------------------------------------------------------------
    Rail collapse preference
@@ -279,9 +281,14 @@ export function SiteNavigation() {
             aria-label="K-Nyi — back to top"
             className="flex items-center gap-2.5 rounded-xl px-2.5 py-2.5 transition-colors duration-200 hover:bg-white/55"
           >
-            <span className="flex h-7 w-7 flex-none items-center justify-center rounded-sm bg-accent-secondary text-[0.625rem] font-semibold tracking-wider text-accent-primary">
-              KN
-            </span>
+            <Image
+              src={withBasePath("/images/mark-k-nyi.png")}
+              alt=""
+              width={28}
+              height={28}
+              className="h-7 w-7 flex-none"
+              priority
+            />
             <span className="rail-brand-text flex min-w-0 flex-col">
               <span className="text-[0.8125rem] font-semibold tracking-tight text-accent-secondary">
                 K-Nyi

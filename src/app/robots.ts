@@ -7,6 +7,11 @@ import type { MetadataRoute } from "next";
  * they are the private console and its endpoints, and there is nothing in them
  * a crawler should be spending budget on.
  */
+/** Metadata routes are prerendered files. Declaring them static keeps the
+ *  GitHub Pages export working — an export requires every route to be
+ *  prerenderable. */
+export const dynamic = "force-static";
+
 export default function robots(): MetadataRoute.Robots {
   const base = process.env.NEXT_PUBLIC_SITE_URL;
 

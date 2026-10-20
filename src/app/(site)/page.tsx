@@ -18,6 +18,9 @@ import { SiteFooter } from "@/components/SiteFooter";
  *
  * The content layer reads `content/*.json` from disk during the render, so a
  * regeneration picks up whatever the console last wrote.
+ *
+ * A static export has no runtime and therefore no ISR window, so the value
+ * becomes `false` there — see `scripts/build-pages.mjs`.
  */
 export const revalidate = 3600;
 

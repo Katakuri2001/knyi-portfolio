@@ -28,6 +28,37 @@ while no photograph existed — has been deleted. There is no longer a placehold
 
 ---
 
+## 1b. Brand assets
+
+The owner's own artwork was added to `public/images/` and is now the site's mark.
+
+| File | Role |
+|---|---|
+| `khant_nyi_nyi_logo_only.png` | **Source** — the KN monogram, 828×823, transparent |
+| `Khant Nyi Nyi SEO Logo.png` | **Source** — the full lockup, 1536×1024, transparent |
+| `mark-k-nyi.png` | 128×128 trimmed, optimised mark — used in the rail and console header |
+| `brand-lockup.webp` | Full lockup as WebP (102 KB vs 1.9 MB as PNG) |
+
+**Where the mark is used** (inspected before applying):
+
+1. **Floating rail brand badge** — `src/components/SiteNavigation.tsx`. Was a
+   navy `KN` text square; now the mark at 28px.
+2. **Admin console header** — `src/components/admin/CaseStudyManager.tsx`. Same
+   change, same mark.
+3. **Favicon** — `src/app/favicon.ico` was still the **default Next.js favicon**.
+   Replaced with the mark at 16/32/48, plus `src/app/apple-icon.png` at 180×180.
+
+The mark is `alt=""` in both places: the link already carries the name
+("K-Nyi — back to top"), so an image alt would only add noise.
+
+**Colour note.** The mark is blue→cyan→violet. The site palette is teal + deep
+navy. The cyan end sits in the same family as `--color-accent-primary`, so it
+reads as one system; the violet is new to the page. The earlier "no purple"
+rule in `AGENTS.md` was written about decorative gradient blobs, not about the
+owner's own mark.
+
+---
+
 ## 2. Collapsible navigation rail
 
 The rail is still a floating vertical glass panel, vertically centred and inset from

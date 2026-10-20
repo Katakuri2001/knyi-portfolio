@@ -109,7 +109,7 @@ export function AdminSignIn({ configured }: { configured: boolean }) {
             onChange={(event) => setPassword(event.target.value)}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? errorId : undefined}
-            className="w-full rounded-sm border border-border bg-surface px-4 py-3 text-[0.9375rem] text-foreground transition-colors duration-200 outline-none placeholder:text-muted-text focus:border-accent-ink"
+            className="glass-surface w-full rounded-lg px-4 py-3 text-[0.9375rem] text-foreground transition-colors duration-200 outline-none placeholder:text-muted-text"
             placeholder="••••••••••••"
           />
 
@@ -128,7 +128,7 @@ export function AdminSignIn({ configured }: { configured: boolean }) {
           <button
             type="submit"
             disabled={busy || password.length === 0}
-            className="cta-primary mt-6 w-full justify-center disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:translate-y-0"
+            className="glass-primary mt-6 w-full justify-center"
           >
             {busy ? "Checking…" : "Sign in"}
             <svg
@@ -147,7 +147,7 @@ export function AdminSignIn({ configured }: { configured: boolean }) {
         </form>
       )}
 
-      <Link href="/" className="cta-secondary mt-12 self-start">
+      <Link href="/" className="glass-surface mt-12 self-start px-4 py-2">
         Back to the public site
       </Link>
     </main>

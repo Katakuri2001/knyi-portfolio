@@ -154,7 +154,7 @@ export function CaseStudyEditor({
           </div>
 
           <div className="mt-3 flex flex-wrap gap-3">
-            <label className="cta-secondary cursor-pointer text-[0.8125rem]">
+            <label className="glass-surface cursor-pointer px-4 py-2 text-[0.8125rem]">
               {draft.image ? "Replace image" : "Upload image"}
               <input
                 ref={fileRef}
@@ -193,7 +193,7 @@ export function CaseStudyEditor({
                 value={draft.imageAlt ?? ""}
                 placeholder="Screenshot of the campaign ad set"
                 onChange={(event) => set("imageAlt", event.target.value)}
-                className="w-full rounded-sm border border-border bg-surface px-3 py-2 text-[0.875rem] text-foreground transition-colors duration-200 outline-none placeholder:text-muted-text/70 focus:border-accent-ink"
+                className="glass-surface w-full rounded-lg px-3 py-2 text-[0.875rem] text-foreground transition-colors duration-200 outline-none placeholder:text-muted-text/70"
               />
               <p className="mt-2 text-[0.75rem] leading-relaxed text-muted-text">
                 Describe what the image shows. Left blank, the page uses a
@@ -225,7 +225,7 @@ export function CaseStudyEditor({
                     onChange={(event) =>
                       set(field.key, event.target.value)
                     }
-                    className="w-full rounded-sm border border-border bg-surface px-3 py-2.5 text-[0.9375rem] text-foreground transition-colors duration-200 outline-none placeholder:text-muted-text/70 focus:border-accent-ink"
+                    className="glass-surface w-full rounded-lg px-3 py-2.5 text-[0.9375rem] text-foreground transition-colors duration-200 outline-none placeholder:text-muted-text/70"
                   />
                 </div>
               );
@@ -243,7 +243,7 @@ export function CaseStudyEditor({
                 rows={3}
                 value={draft.methodologyNote ?? ""}
                 onChange={(event) => set("methodologyNote", event.target.value)}
-                className="w-full resize-y rounded-sm border border-border bg-surface px-3 py-2.5 text-[0.875rem] leading-relaxed text-foreground transition-colors duration-200 outline-none focus:border-accent-ink"
+                className="glass-surface w-full resize-y rounded-lg px-3 py-2.5 text-[0.875rem] leading-relaxed text-foreground transition-colors duration-200 outline-none"
               />
             </div>
 
@@ -295,11 +295,11 @@ export function CaseStudyEditor({
         <button
           type="submit"
           disabled={busy || !draft.title.trim()}
-          className="cta-primary disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:translate-y-0"
+          className="glass-primary"
         >
           {busy ? "Saving…" : isNew ? "Create case study" : "Save changes"}
         </button>
-        <button type="button" onClick={onCancel} className="cta-secondary">
+        <button type="button" onClick={onCancel} className="glass-surface px-4 py-2">
           Cancel
         </button>
       </div>

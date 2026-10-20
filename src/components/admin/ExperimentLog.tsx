@@ -119,7 +119,7 @@ export function ExperimentLog({ initial }: { initial: ExperimentRow[] }) {
               }))
             }
             placeholder="Making the contact CTA more prominent on case-study pages may increase qualified enquiries."
-            className="w-full resize-y rounded-sm border border-border bg-surface px-3 py-2 text-[0.875rem] leading-relaxed text-foreground outline-none focus:border-accent-ink"
+            className="glass-surface w-full resize-y rounded-lg px-3 py-2 text-[0.875rem] leading-relaxed text-foreground outline-none"
           />
         </div>
 
@@ -163,7 +163,7 @@ export function ExperimentLog({ initial }: { initial: ExperimentRow[] }) {
             type="button"
             onClick={create}
             disabled={busy || !form.hypothesis.trim()}
-            className="rounded-sm bg-accent-ink px-4 py-2 text-[0.875rem] font-medium text-white transition-colors hover:bg-accent-ink/85 disabled:cursor-not-allowed disabled:opacity-55"
+            className="glass-primary rounded-lg px-4 py-2 text-[0.875rem] font-medium"
           >
             Record experiment
           </button>
@@ -222,7 +222,7 @@ export function ExperimentLog({ initial }: { initial: ExperimentRow[] }) {
                         status: event.target.value as ExperimentStatus,
                       })
                     }
-                    className="rounded-sm border border-border bg-surface px-2.5 py-1.5 text-[0.8125rem] text-foreground outline-none focus:border-accent-ink"
+                    className="glass-surface rounded-lg px-2.5 py-1.5 text-[0.8125rem] text-foreground outline-none"
                   >
                     {EXPERIMENT_STATUSES.map((value) => (
                       <option key={value} value={value}>
@@ -306,7 +306,7 @@ function Field({
         type="text"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-sm border border-border bg-surface px-3 py-2 text-[0.875rem] text-foreground outline-none focus:border-accent-ink"
+        className="glass-surface w-full rounded-lg px-3 py-2 text-[0.875rem] text-foreground outline-none"
       />
     </div>
   );

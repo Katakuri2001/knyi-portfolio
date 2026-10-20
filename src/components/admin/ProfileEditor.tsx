@@ -193,7 +193,7 @@ export function ProfileEditor({ profile }: { profile: Profile }) {
           type="button"
           onClick={save}
           disabled={busy}
-          className="rounded-sm bg-accent-ink px-4 py-2 text-[0.875rem] font-medium text-white transition-colors hover:bg-accent-ink/85 disabled:cursor-not-allowed disabled:opacity-60"
+          className="glass-primary rounded-lg px-4 py-2 text-[0.875rem] font-medium"
         >
           {busy ? "Saving…" : "Save profile"}
         </button>
@@ -238,7 +238,7 @@ function Field({
           rows={3}
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="w-full resize-y rounded-sm border border-border bg-surface px-3 py-2 text-[0.875rem] leading-relaxed text-foreground outline-none focus:border-accent-ink"
+          className="glass-surface w-full resize-y rounded-lg px-3 py-2 text-[0.875rem] leading-relaxed text-foreground outline-none"
         />
       ) : (
         <input
@@ -246,7 +246,7 @@ function Field({
           type="text"
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="w-full rounded-sm border border-border bg-surface px-3 py-2 text-[0.875rem] text-foreground outline-none focus:border-accent-ink"
+          className="glass-surface w-full rounded-lg px-3 py-2 text-[0.875rem] text-foreground outline-none"
         />
       )}
       {hint ? (

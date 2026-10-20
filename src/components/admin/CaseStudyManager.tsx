@@ -222,31 +222,8 @@ export function CaseStudyManager({
 
   return (
     <div className="space-y-4">
-        <div className="rule-ink pt-4">
-          <span className="text-meta font-medium tracking-[0.18em] text-accent-ink">
-            01
-          </span>
-          <span className="text-eyebrow ml-4 text-accent-ink">
-            Content — selected campaigns
-          </span>
-        </div>
-
-        <div className="mt-10 grid gap-8 md:grid-cols-12">
-          <div className="md:col-span-7">
-            <h1 className="text-title text-foreground">
-              Case studies
-              <br />
-              <span className="text-muted-text">behind the Work section.</span>
-            </h1>
-          </div>
-          <div className="md:col-span-4 md:col-start-9">
-            <p className="text-lede text-muted-text">
-              Saving here writes to <code className="font-geist-mono">content/case-studies.json</code>{" "}
-              and regenerates the public page.
-            </p>
-          </div>
-        </div>
-
+        {/* The page's own header carries the title, so this block starts
+            straight at the list. */}
         <p
           role={status ? "status" : undefined}
           aria-live="polite"
@@ -266,7 +243,7 @@ export function CaseStudyManager({
           <p className="text-eyebrow text-foreground">
             {studies.length} {studies.length === 1 ? "entry" : "entries"}
           </p>
-          <button type="button" onClick={startCreate} className="cta-primary">
+          <button type="button" onClick={startCreate} className="glass-primary inline-flex items-center gap-2 whitespace-nowrap rounded-lg px-4 py-2 text-[0.875rem] font-medium">
             New case study
             <svg
               aria-hidden="true"
@@ -347,7 +324,7 @@ export function CaseStudyManager({
                       onClick={() => move(index, -1)}
                       disabled={busy || index === 0}
                       aria-label={`Move ${study.title} earlier`}
-                      className="flex h-9 w-9 items-center justify-center rounded-sm border border-border text-muted-text transition-colors hover:border-accent-ink hover:text-accent-ink disabled:cursor-not-allowed disabled:opacity-35"
+                      className="glass-surface flex h-9 w-9 items-center justify-center rounded-lg text-muted-text transition-colors hover:text-accent-ink disabled:cursor-not-allowed disabled:opacity-35"
                     >
                       <span aria-hidden="true">↑</span>
                     </button>
@@ -356,7 +333,7 @@ export function CaseStudyManager({
                       onClick={() => move(index, 1)}
                       disabled={busy || index === studies.length - 1}
                       aria-label={`Move ${study.title} later`}
-                      className="flex h-9 w-9 items-center justify-center rounded-sm border border-border text-muted-text transition-colors hover:border-accent-ink hover:text-accent-ink disabled:cursor-not-allowed disabled:opacity-35"
+                      className="glass-surface flex h-9 w-9 items-center justify-center rounded-lg text-muted-text transition-colors hover:text-accent-ink disabled:cursor-not-allowed disabled:opacity-35"
                     >
                       <span aria-hidden="true">↓</span>
                     </button>

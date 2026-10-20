@@ -156,7 +156,7 @@ export function LeadManager() {
             onChange={(event) => setSearch(event.target.value)}
             onBlur={() => void load()}
             placeholder="Name, email or message"
-            className="w-full rounded-sm border border-border bg-surface px-3 py-2 text-[0.875rem] text-foreground outline-none focus:border-accent-ink"
+            className="glass-surface w-full rounded-lg px-3 py-2 text-[0.875rem] text-foreground outline-none"
           />
         </div>
 
@@ -171,7 +171,7 @@ export function LeadManager() {
             id="lead-status"
             value={status}
             onChange={(event) => setStatus(event.target.value)}
-            className="rounded-sm border border-border bg-surface px-3 py-2 text-[0.875rem] text-foreground outline-none focus:border-accent-ink"
+            className="glass-surface rounded-lg px-3 py-2 text-[0.875rem] text-foreground outline-none"
           >
             <option value="">All statuses</option>
             {LEAD_STATUSES.map((value) => (
@@ -245,7 +245,7 @@ export function LeadManager() {
                     onChange={(event) =>
                       void patch(lead, { status: event.target.value as LeadStatus })
                     }
-                    className="rounded-sm border border-border bg-surface px-2.5 py-1.5 text-[0.8125rem] text-foreground outline-none focus:border-accent-ink"
+                    className="glass-surface rounded-lg px-2.5 py-1.5 text-[0.8125rem] text-foreground outline-none"
                   >
                     {LEAD_STATUSES.map((value) => (
                       <option key={value} value={value}>
@@ -360,7 +360,7 @@ function LeadDetail({
                     dealValue === "" ? null : Number(dealValue),
                 })
               }
-              className="w-full rounded-sm border border-border bg-surface px-3 py-2 text-[0.875rem] text-foreground outline-none focus:border-accent-ink"
+              className="glass-surface w-full rounded-lg px-3 py-2 text-[0.875rem] text-foreground outline-none"
             />
           </div>
 
@@ -386,7 +386,7 @@ function LeadDetail({
                     : null,
                 })
               }
-              className="w-full rounded-sm border border-border bg-surface px-3 py-2 text-[0.875rem] text-foreground outline-none focus:border-accent-ink"
+              className="glass-surface w-full rounded-lg px-3 py-2 text-[0.875rem] text-foreground outline-none"
             />
           </div>
         </div>
@@ -404,7 +404,7 @@ function LeadDetail({
             value={note}
             onChange={(event) => setNote(event.target.value)}
             placeholder="What you did, what was agreed, what is next."
-            className="w-full resize-y rounded-sm border border-border bg-surface px-3 py-2 text-[0.875rem] leading-relaxed text-foreground outline-none focus:border-accent-ink"
+            className="glass-surface w-full resize-y rounded-lg px-3 py-2 text-[0.875rem] leading-relaxed text-foreground outline-none"
           />
           <button
             type="button"
@@ -413,7 +413,7 @@ function LeadDetail({
               onNote(note);
               setNote("");
             }}
-            className="mt-2 rounded-sm border border-border bg-surface px-3 py-1.5 text-[0.8125rem] text-foreground transition-colors hover:bg-accent-ink/10 disabled:cursor-not-allowed disabled:opacity-50"
+            className="glass-surface mt-2 rounded-lg px-3 py-1.5 text-[0.8125rem] text-foreground disabled:cursor-not-allowed disabled:opacity-50"
           >
             Save note
           </button>

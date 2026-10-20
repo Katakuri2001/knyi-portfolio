@@ -216,6 +216,35 @@ title, description, canonical, Open Graph tags and robots directive all follow.
 Deleting an override restores the code defaults. Removing the whole site from search
 requires a second, explicit confirmation.
 
+### 3.5 The console's material
+
+The console uses the same liquid-glass language as the public site, on the three
+things that sit above the data: the **navigation panel**, the **primary actions**,
+and the **filter controls**.
+
+Two grades, deliberately:
+
+| Grade | Blur | Used for |
+|---|---|---|
+| `.glass-panel` | 20px | The floating navigation panel and the mobile drawer |
+| `.glass-bar` | 18px | The reporting-period filter trough |
+| `.glass-primary` | 16px | Primary actions — deep navy glass with a teal keyline |
+| `.glass-surface` | none | Secondary controls, form fields, the reorder buttons — translucency and a specular edge, but **no** backdrop filter |
+
+The last row is the important one. There are dozens of small controls on a console
+page, and a backdrop filter on each one is real frame cost for a visual gain
+that a specular edge already delivers over flat paper. The blur is spent where
+it can be seen: on the three large surfaces.
+
+The navigation is a **floating panel**, inset from the edge with rounded corners,
+rather than a docked column — the content column is offset by `--rail` so the two
+never overlap. A solid column was the earlier choice, on the grounds that a data
+table needs a stable edge; the floating panel is the better answer, because the
+panel is narrow and the data sits to its right, not under it.
+
+Everything degrades to an opaque fill where `backdrop-filter` is unsupported, and
+to a solid one under `prefers-reduced-transparency`.
+
 ---
 
 ## 4. Bugs found and fixed during the build
@@ -284,6 +313,7 @@ Driven with Playwright against `npm start`:
 | The public tracking endpoint stays public | ✓ |
 | No horizontal overflow at 390px, admin or public | ✓ |
 | Console errors | **0** |
+| Contrast across all 11 console pages, on the glass surfaces | **0 failures**, 748 text samples |
 
 ---
 

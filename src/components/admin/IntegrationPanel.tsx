@@ -56,7 +56,7 @@ export function IntegrationPanel({ integrationKey }: { integrationKey: string })
         type="button"
         onClick={test}
         disabled={running}
-        className="rounded-sm border border-border bg-surface px-3 py-1.5 text-[0.8125rem] text-foreground transition-colors hover:bg-accent-ink/10 disabled:cursor-not-allowed disabled:opacity-60"
+        className="glass-surface rounded-lg px-3 py-1.5 text-[0.8125rem] text-foreground disabled:cursor-not-allowed disabled:opacity-60"
       >
         {running ? "Testing…" : "Test connection"}
       </button>

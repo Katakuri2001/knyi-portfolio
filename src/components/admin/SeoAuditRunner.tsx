@@ -51,7 +51,7 @@ export function SeoAuditRunner() {
         type="button"
         onClick={run}
         disabled={running}
-        className="rounded-sm bg-accent-ink px-3 py-1.5 text-[0.8125rem] font-medium text-white transition-colors hover:bg-accent-ink/85 disabled:cursor-not-allowed disabled:opacity-60"
+        className="glass-primary rounded-lg px-3 py-1.5 text-[0.8125rem] font-medium"
       >
         {running ? "Running…" : "Run audit"}
       </button>

@@ -110,7 +110,7 @@ export function CampaignRegister() {
               setForm((current) => ({ ...current, name: event.target.value }))
             }
             placeholder="Spring push"
-            className="w-full rounded-sm border border-border bg-surface px-3 py-2 text-[0.875rem] text-foreground outline-none focus:border-accent-ink"
+            className="glass-surface w-full rounded-lg px-3 py-2 text-[0.875rem] text-foreground outline-none"
           />
         </div>
         <div>
@@ -126,7 +126,7 @@ export function CampaignRegister() {
             onChange={(event) =>
               setForm((current) => ({ ...current, channel: event.target.value }))
             }
-            className="w-full rounded-sm border border-border bg-surface px-3 py-2 text-[0.875rem] text-foreground outline-none focus:border-accent-ink"
+            className="glass-surface w-full rounded-lg px-3 py-2 text-[0.875rem] text-foreground outline-none"
           >
             <option value="">Choose…</option>
             <option value="paid_social">Paid social</option>
@@ -151,7 +151,7 @@ export function CampaignRegister() {
               setForm((current) => ({ ...current, service: event.target.value }))
             }
             placeholder="Meta Ads planning"
-            className="w-full rounded-sm border border-border bg-surface px-3 py-2 text-[0.875rem] text-foreground outline-none focus:border-accent-ink"
+            className="glass-surface w-full rounded-lg px-3 py-2 text-[0.875rem] text-foreground outline-none"
           />
         </div>
         <div className="lg:col-span-2">
@@ -172,7 +172,7 @@ export function CampaignRegister() {
               }))
             }
             placeholder="What this campaign is for"
-            className="w-full rounded-sm border border-border bg-surface px-3 py-2 text-[0.875rem] text-foreground outline-none focus:border-accent-ink"
+            className="glass-surface w-full rounded-lg px-3 py-2 text-[0.875rem] text-foreground outline-none"
           />
         </div>
       </div>
@@ -182,7 +182,7 @@ export function CampaignRegister() {
           type="button"
           onClick={create}
           disabled={busy || !form.name.trim()}
-          className="rounded-sm bg-accent-ink px-4 py-2 text-[0.875rem] font-medium text-white transition-colors hover:bg-accent-ink/85 disabled:cursor-not-allowed disabled:opacity-55"
+          className="glass-primary rounded-lg px-4 py-2 text-[0.875rem] font-medium"
         >
           Record campaign
         </button>

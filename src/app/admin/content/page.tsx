@@ -26,7 +26,7 @@ export default async function ContentPage() {
         index="07"
         objective="G — Content management"
         title="Content & case studies"
-        purpose="The work you have finished. The first entry is the featured case study on the public site; the rest alternate between the two supporting layouts."
+        purpose="The work you have finished. The first entry is the featured case study on the public site; the rest alternate between the two supporting layouts. Saving here writes to content/case-studies.json and regenerates the public page."
       />
 
       <Panel

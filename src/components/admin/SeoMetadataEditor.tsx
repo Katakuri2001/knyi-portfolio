@@ -264,7 +264,7 @@ export function SeoMetadataEditor({
                             type="button"
                             onClick={() => save(route.path)}
                             disabled={saving}
-                            className="rounded-sm bg-accent-ink px-4 py-2 text-[0.875rem] font-medium text-white transition-colors hover:bg-accent-ink/85 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="glass-primary rounded-lg px-4 py-2 text-[0.875rem] font-medium"
                           >
                             {saving ? "Saving…" : "Save metadata"}
                           </button>
@@ -328,7 +328,7 @@ function Field({
         value={value}
         maxLength={maxLength}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-sm border border-border bg-surface px-3 py-2 text-[0.875rem] text-foreground outline-none focus:border-accent-ink"
+        className="glass-surface w-full rounded-lg px-3 py-2 text-[0.875rem] text-foreground outline-none"
       />
       <p className="mt-1 text-[0.75rem] text-muted-text">{hint}</p>
     </div>

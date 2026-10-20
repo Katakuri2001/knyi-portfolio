@@ -27,13 +27,13 @@ export function ReportExports({ exportQuery }: { exportQuery: string }) {
       <div className="flex flex-wrap gap-3">
         <a
           href={href("leads")}
-          className="rounded-sm bg-accent-ink px-4 py-2 text-[0.875rem] font-medium text-white transition-colors hover:bg-accent-ink/85"
+          className="glass-primary rounded-lg px-4 py-2 text-[0.875rem] font-medium"
         >
           Download enquiries (CSV)
         </a>
         <a
           href={href("events")}
-          className="rounded-sm border border-border bg-surface px-4 py-2 text-[0.875rem] text-foreground transition-colors hover:bg-accent-ink/10"
+          className="glass-surface rounded-lg px-4 py-2 text-[0.875rem] text-foreground"
         >
           Download events (CSV)
         </a>

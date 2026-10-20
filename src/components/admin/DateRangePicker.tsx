@@ -9,6 +9,10 @@ import { RANGE_PRESETS } from "@/lib/date-range";
  *
  * The chosen period lives in the URL, so every page in the console reports on
  * the same window and a report can be shared as a link.
+ *
+ * The control is a glass trough with glass tabs inside it. The active tab is a
+ * deep navy glass chip, so the state is carried by shape and contrast as well as
+ * by colour.
  */
 export function DateRangePicker({ current }: { current: string }) {
   const router = useRouter();
@@ -38,7 +42,7 @@ export function DateRangePicker({ current }: { current: string }) {
       <div
         role="group"
         aria-label="Reporting period"
-        className="flex flex-wrap border border-border"
+        className="glass-bar flex flex-wrap rounded-xl p-1"
       >
         {RANGE_PRESETS.map((preset) => {
           const active = current === preset.key;
@@ -49,10 +53,10 @@ export function DateRangePicker({ current }: { current: string }) {
               onClick={() => apply(preset.key)}
               aria-pressed={active}
               className={[
-                "px-3 py-1.5 text-[0.8125rem] transition-colors duration-150",
+                "rounded-lg px-3 py-1.5 text-[0.8125rem] transition-all duration-200",
                 active
-                  ? "bg-accent-ink text-white"
-                  : "bg-surface text-muted-text hover:bg-accent-ink/10 hover:text-foreground",
+                  ? "glass-primary font-medium"
+                  : "text-muted-text hover:bg-white/50 hover:text-foreground",
               ].join(" ")}
             >
               {preset.label}
@@ -64,10 +68,10 @@ export function DateRangePicker({ current }: { current: string }) {
           onClick={() => apply("custom", from, to)}
           aria-pressed={current === "custom"}
           className={[
-            "px-3 py-1.5 text-[0.8125rem] transition-colors duration-150",
+            "rounded-lg px-3 py-1.5 text-[0.8125rem] transition-all duration-200",
             current === "custom"
-              ? "bg-accent-ink text-white"
-              : "bg-surface text-muted-text hover:bg-accent-ink/10 hover:text-foreground",
+              ? "glass-primary font-medium"
+              : "text-muted-text hover:bg-white/50 hover:text-foreground",
           ].join(" ")}
         >
           Custom
@@ -75,7 +79,7 @@ export function DateRangePicker({ current }: { current: string }) {
       </div>
 
       {current === "custom" ? (
-        <div className="flex items-center gap-2">
+        <div className="glass-surface flex items-center gap-2 rounded-xl p-1">
           <label htmlFor="range-from" className="sr-only">
             From date
           </label>
@@ -85,7 +89,7 @@ export function DateRangePicker({ current }: { current: string }) {
             value={from}
             max={to || undefined}
             onChange={(event) => setFrom(event.target.value)}
-            className="rounded-sm border border-border bg-surface px-2.5 py-1.5 text-[0.8125rem] text-foreground outline-none focus:border-accent-ink"
+            className="rounded-lg bg-transparent px-2 py-1.5 text-[0.8125rem] text-foreground outline-none"
           />
           <span aria-hidden="true" className="text-muted-text">
             →
@@ -99,12 +103,12 @@ export function DateRangePicker({ current }: { current: string }) {
             value={to}
             min={from || undefined}
             onChange={(event) => setTo(event.target.value)}
-            className="rounded-sm border border-border bg-surface px-2.5 py-1.5 text-[0.8125rem] text-foreground outline-none focus:border-accent-ink"
+            className="rounded-lg bg-transparent px-2 py-1.5 text-[0.8125rem] text-foreground outline-none"
           />
           <button
             type="button"
             onClick={() => apply("custom", from, to)}
-            className="rounded-sm border border-border bg-surface px-3 py-1.5 text-[0.8125rem] text-foreground transition-colors hover:bg-accent-ink/10"
+            className="glass-primary rounded-lg px-3 py-1.5 text-[0.8125rem]"
           >
             Apply
           </button>

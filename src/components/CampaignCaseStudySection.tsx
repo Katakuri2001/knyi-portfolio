@@ -1,166 +1,363 @@
-import { PlaceholderPanel } from "@/components/PlaceholderPanel";
+import { Ledger, Note, SectionHead } from "@/components/editorial";
+import { CaseVisual } from "@/components/CaseVisual";
 import { Reveal } from "@/components/Reveal";
+import { AudienceResearchFigure } from "@/components/visuals/AudienceResearchFigure";
+import { CampaignCreativeFigure } from "@/components/visuals/CampaignCreativeFigure";
+import { CampaignStructureFigure } from "@/components/visuals/CampaignStructureFigure";
+import {
+  caseMetrics,
+  caseTitle,
+  getCaseStudies,
+  type CaseMetric,
+  type CaseStudy,
+} from "@/lib/content";
 
 /**
- * Case-study content is hardcoded in the skeleton stage. It duplicates
- * content/case-studies.json and the two disagree — see
- * docs/STAGE-1-DESIGN-SKELETON.md "Known content drift". The JSON is the
- * intended source of truth once these become data-driven.
+ * Selected campaigns — one featured study plus every supporting study.
  *
- * The first study is featured and spans two columns so the section has a
- * clear focal point rather than three identical cards.
+ * The previous version rendered one dark feature and two identical glass cards
+ * in a 2-up grid. Each study now gets a mode chosen for its content:
+ *
+ *   Mode A — featured: full-bleed dark room, wide editorial split. Carries the
+ *            campaign-creative plate and the full metric ledger.
+ *   Mode B — wide row: horizontal split with the plan-structure plate, ledger
+ *            beside it.
+ *   Mode C — offset card: narrower, pushed off the centre line, oversized index
+ *            numeral in the margin.
+ *
+ * The first study is always the featured one. The rest alternate between Mode B
+ * and Mode C, so the section renders **any** number of studies and no two
+ * supporting studies look alike — a fourth case study added through /admin
+ * appears here without this file needing to change.
+ *
+ * Every figure and metric comes from content/case-studies.json. A metric the
+ * data does not supply is not rendered — nothing is filled in.
  */
-const CASE_STUDIES = [
-  {
-    index: "01",
-    label: "Case study 01",
-    panelTitle: "Modular Building",
-    category: "Modular Building Business",
-    platform: "Meta advertising",
-    summary: "Performance marketing campaign",
-    metrics: [
-      { label: "Ad Spend", value: "US$160" },
-      { label: "Duration", value: "2 months" },
-      { label: "Audience", value: "0 → ~300 followers" },
-      { label: "Orders", value: "1 order" },
-    ],
-    footnote:
-      "Results are reported or estimated from the available project figures. They have not been independently verified, and advertising-attributed revenue is not claimed.",
-    featured: true,
-  },
-  {
-    index: "02",
-    label: "Case study 02",
-    panelTitle: "Ready-Made Paratha",
-    category: "Ready-Made Paratha Business",
-    platform: "Meta advertising",
-    summary: "Performance marketing campaign",
-    metrics: [
-      { label: "Ad Spend", value: "US$170" },
-      { label: "Duration", value: "2 months" },
-      { label: "Audience", value: "0 → ~2,000 followers" },
-      { label: "Orders", value: "~200 orders" },
-    ],
-    footnote:
-      "Results are reported or estimated from the available project figures. They have not been independently verified, and advertising-attributed revenue is not claimed.",
-  },
-  {
-    index: "03",
-    label: "Case study 03",
-    panelTitle: "Women's Underwear Tailoring",
-    category: "Women's Underwear Tailoring",
-    platform: "Multi-channel marketing",
-    summary: "Brand strategy & content planning",
-    metrics: [
-      { label: "Avg Orders/Month", value: "~50" },
-      { label: "Avg Order Value", value: "US$5" },
-    ],
-    footnote:
-      "Scope included brand strategy, content planning, consultation, and multi-channel marketing. No ad-spend figure is supplied for this case study.",
-  },
-];
 
-function Metrics({ metrics }: { metrics: { label: string; value: string }[] }) {
+function ReportedTag({ tone = "light" }: { tone?: "light" | "dark" }) {
   return (
-    <dl className="grid grid-cols-2 gap-x-6 gap-y-7">
-      {metrics.map((metric) => (
-        <div key={metric.label}>
-          <dt className="text-eyebrow text-muted-text">{metric.label}</dt>
-          <dd className="mt-2 font-geist-sans text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-            {metric.value}
-          </dd>
+    <span
+      className={[
+        "inline-flex items-center gap-2 px-2.5 py-1 text-meta",
+        tone === "dark"
+          ? "border border-white/25 text-on-dark-muted"
+          : "border border-accent-ink/45 text-accent-ink",
+      ].join(" ")}
+    >
+      <span
+        aria-hidden="true"
+        className="inline-block h-1.5 w-1.5 rounded-full"
+        style={{
+          background:
+            tone === "dark"
+              ? "var(--color-accent-primary)"
+              : "var(--color-accent-ink)",
+        }}
+      />
+      Reported figures
+    </span>
+  );
+}
+
+function MetricBlock({
+  metrics,
+  tone,
+}: {
+  metrics: CaseMetric[];
+  tone: "light" | "dark";
+}) {
+  if (metrics.length === 0) return null;
+  return (
+    <div>
+      <p
+        className={[
+          "figure-caption mb-3",
+          tone === "dark" ? "text-on-dark-muted" : "text-muted-text",
+        ].join(" ")}
+      >
+        Available figures
+      </p>
+      <Ledger items={metrics} tone={tone} />
+    </div>
+  );
+}
+
+function indexLabel(position: number): string {
+  return String(position + 1).padStart(2, "0");
+}
+
+/* ---------------------------------------------------------------------------
+   Mode A — featured, full-bleed dark room
+   --------------------------------------------------------------------------- */
+
+function FeaturedStudy({ study }: { study: CaseStudy }) {
+  return (
+    <Reveal>
+      <div className="room-dark mt-14 md:mt-20">
+        <div className="shell py-12 md:py-16">
+          <div className="grid items-center gap-x-10 gap-y-10 lg:grid-cols-12">
+            <div className="lg:col-span-6">
+              <CaseVisual
+                study={study}
+                ratio="9 / 10"
+                caption="Case study 01 — campaign visual"
+                captionTone="dark"
+                priority
+                fallback={<CampaignCreativeFigure />}
+              />
+            </div>
+
+            <div className="lg:col-span-5 lg:col-start-8">
+              <div className="flex items-baseline gap-4 pt-4">
+                <span className="text-meta tracking-[0.18em] text-accent-primary">
+                  01
+                </span>
+                <span className="text-eyebrow text-accent-primary">
+                  Featured case study
+                </span>
+              </div>
+
+              <h3 className="mt-6 text-title text-white">{caseTitle(study)}</h3>
+
+              <p className="mt-4 text-subtitle text-on-dark">{study.platform}</p>
+
+              {study.scope ? (
+                <p className="mt-4 leading-relaxed text-on-dark-muted">
+                  Scope: {study.scope}.
+                </p>
+              ) : null}
+
+              <div className="mt-9">
+                <MetricBlock metrics={caseMetrics(study)} tone="dark" />
+              </div>
+
+              <div className="mt-8">
+                <ReportedTag tone="dark" />
+              </div>
+
+              {study.methodologyNote ? (
+                <div className="mt-8">
+                  <Note tone="dark">{study.methodologyNote}</Note>
+                </div>
+              ) : null}
+            </div>
+          </div>
         </div>
-      ))}
-    </dl>
+      </div>
+    </Reveal>
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   Mode B — wide horizontal row
+   --------------------------------------------------------------------------- */
+
+function WideStudy({
+  study,
+  position,
+  last,
+}: {
+  study: CaseStudy;
+  position: number;
+  last: boolean;
+}) {
+  return (
+    <Reveal>
+      <div className={`shell ${last ? "pb-16 md:pb-24" : "section-body"}`}>
+        <article className="grid items-center gap-x-12 gap-y-8 lg:grid-cols-12">
+          <div className="lg:col-span-6">
+            <CaseVisual
+              study={study}
+              ratio="5 / 4"
+              caption={`Case study ${indexLabel(position)} — campaign visual`}
+              fallback={
+                <div className="h-full w-full bg-surface">
+                  <CampaignStructureFigure />
+                </div>
+              }
+            />
+          </div>
+
+          <div className="lg:col-span-5 lg:col-start-8">
+            <div className="flex items-baseline gap-4 border-t border-border pt-4">
+              <span className="text-meta tracking-[0.18em] text-accent-ink">
+                {indexLabel(position)}
+              </span>
+              <span className="text-eyebrow text-accent-ink">
+                Supporting case study
+              </span>
+            </div>
+
+            <h3 className="mt-5 text-subtitle text-foreground">
+              {caseTitle(study)}
+            </h3>
+
+            <p className="mt-3 text-[0.9375rem] text-foreground/85">
+              {study.platform}
+            </p>
+
+            {study.scope ? (
+              <p className="mt-3 leading-relaxed text-muted-text">
+                Scope: {study.scope}.
+              </p>
+            ) : null}
+
+            <div className="mt-7">
+              <MetricBlock metrics={caseMetrics(study)} tone="light" />
+            </div>
+
+            <div className="mt-6">
+              <ReportedTag />
+            </div>
+
+            {study.methodologyNote ? (
+              <div className="mt-7">
+                <Note>{study.methodologyNote}</Note>
+              </div>
+            ) : null}
+          </div>
+        </article>
+      </div>
+    </Reveal>
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   Mode C — offset editorial card
+   --------------------------------------------------------------------------- */
+
+function OffsetStudy({
+  study,
+  position,
+  last,
+}: {
+  study: CaseStudy;
+  position: number;
+  last: boolean;
+}) {
+  return (
+    <div className={`shell ${last ? "pb-16 md:pb-24" : "pb-6 md:pb-10"}`}>
+      <Reveal>
+        <article className="grid gap-x-10 gap-y-8 border-t border-border pt-10 md:grid-cols-12">
+          {/* Oversized numeral lives in the margin, not inside a box. */}
+          <div className="md:col-span-1">
+            <span className="text-index text-accent-ink/45">
+              {indexLabel(position)}
+            </span>
+          </div>
+
+          <div className="md:col-span-4 md:col-start-3">
+            <p className="text-eyebrow text-accent-ink">Supporting case study</p>
+            <h3 className="mt-5 text-subtitle text-foreground">
+              {caseTitle(study)}
+            </h3>
+            <p className="mt-3 text-[0.9375rem] text-foreground/85">
+              {study.platform}
+            </p>
+            {study.scope ? (
+              <p className="mt-3 leading-relaxed text-muted-text">
+                Scope: {study.scope}.
+              </p>
+            ) : null}
+
+            <div className="mt-6">
+              <MetricBlock metrics={caseMetrics(study)} tone="light" />
+            </div>
+
+            <div className="mt-6">
+              <ReportedTag />
+            </div>
+          </div>
+
+          <div className="md:col-span-5 md:col-start-8">
+            <CaseVisual
+              study={study}
+              ratio="5 / 4"
+              caption={`Case study ${indexLabel(position)} — campaign visual`}
+              fallback={
+                <div className="h-full w-full bg-surface">
+                  <AudienceResearchFigure />
+                </div>
+              }
+            />
+
+            {study.methodologyNote ? (
+              <div className="mt-7">
+                <Note>{study.methodologyNote}</Note>
+              </div>
+            ) : null}
+          </div>
+        </article>
+      </Reveal>
+    </div>
   );
 }
 
 export function CampaignCaseStudySection() {
-  const [featured, ...rest] = CASE_STUDIES;
+  const studies = getCaseStudies();
+  const [featured, ...supporting] = studies;
+
+  if (!featured) {
+    return (
+      <section id="campaigns" className="relative">
+        <div className="shell section-body">
+          <SectionHead
+            index="03"
+            label="Selected campaigns"
+            title={
+              <>
+                Campaign
+                <br />
+                {" "}
+                <span className="text-muted-text">case studies.</span>
+              </>
+            }
+            lede="Case studies are being added. Check back shortly."
+          />
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section id="campaigns" className="section-body scroll-mt-24 px-6">
-      <div className="mx-auto max-w-7xl">
-        <Reveal>
-          <p className="text-eyebrow mb-8 flex items-center gap-4 text-accent-secondary">
-            <span className="h-px w-12 bg-accent-secondary/40" aria-hidden="true" />
-            Selected campaigns
-          </p>
-        </Reveal>
-
-        <div className="grid gap-10 lg:grid-cols-12 lg:items-end lg:gap-8">
-          <Reveal delay={0.06} className="lg:col-span-7">
-            <h2 className="text-title text-foreground">
-              Campaign
+    <section id="campaigns" className="relative">
+      <div className="shell pt-16 md:pt-24">
+        <SectionHead
+          index="03"
+          label="Selected campaigns"
+          title={
+            <>
+              {studies.length === 1 ? "One campaign" : `${studies.length} campaigns`}
               <br />
-              case studies
-            </h2>
-          </Reveal>
-          <Reveal delay={0.12} className="lg:col-span-4 lg:col-start-9">
-            <p className="text-muted-text leading-relaxed">
-              Figures below are reported or estimated from available project
-              data. They have not been independently verified.
-            </p>
-          </Reveal>
-        </div>
-
-        {/* Featured study: full width, dark, the page's visual anchor. */}
-        <Reveal delay={0.14}>
-          <article className="mt-16 grid overflow-hidden rounded-3xl bg-ink lg:grid-cols-2">
-            <PlaceholderPanel
-              label={featured.label}
-              title={featured.panelTitle}
-              aspect="portrait"
-              tone="dark"
-              className="min-h-[320px] lg:min-h-full"
-            />
-            <div className="flex flex-col justify-center p-8 md:p-12">
-              <p className="text-eyebrow text-accent-primary">
-                {featured.category}
-              </p>
-              <h3 className="mt-4 font-geist-sans text-3xl font-bold leading-tight tracking-tight text-white md:text-4xl">
-                {featured.platform}
-              </h3>
-              <p className="mt-2 text-on-dark/70">{featured.summary}</p>
-
-              <div className="mt-10 border-t border-white/15 pt-8">
-                <Metrics metrics={featured.metrics} />
-              </div>
-
-              <p className="mt-8 text-xs leading-relaxed text-on-dark-muted">
-                {featured.footnote}
-              </p>
-            </div>
-          </article>
-        </Reveal>
-
-        <div className="mt-6 grid gap-6 md:grid-cols-2">
-          {rest.map((study, i) => (
-            <Reveal key={study.index} delay={0.18 + i * 0.06}>
-              <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-surface transition-colors duration-300 hover:border-accent-ink/40">
-                <PlaceholderPanel label={study.label} title={study.panelTitle} />
-
-                <div className="flex flex-1 flex-col p-8">
-                  <p className="text-eyebrow text-accent-secondary">
-                    {study.category}
-                  </p>
-                  <h3 className="mt-3 font-geist-sans text-xl font-bold tracking-tight text-foreground">
-                    {study.platform}
-                  </h3>
-
-                  <div className="mt-8 border-t border-border pt-6">
-                    <Metrics metrics={study.metrics} />
-                  </div>
-
-                  <p className="mt-8 border-t border-border pt-5 text-xs leading-relaxed text-muted-text">
-                    {study.footnote}
-                  </p>
-                </div>
-              </article>
-            </Reveal>
-          ))}
-        </div>
+              {" "}
+              <span className="text-muted-text">reported honestly.</span>
+            </>
+          }
+          lede="Each study below is drawn from the project record. Figures are reported or estimated and have not been independently verified; no revenue, ROAS or conversion rate is claimed where the record does not supply one."
+        />
       </div>
+
+      <FeaturedStudy study={featured} />
+
+      {supporting.map((study, i) => {
+        const position = i + 1;
+        const last = i === supporting.length - 1;
+        return i % 2 === 0 ? (
+          <WideStudy
+            key={study.id}
+            study={study}
+            position={position}
+            last={last}
+          />
+        ) : (
+          <OffsetStudy
+            key={study.id}
+            study={study}
+            position={position}
+            last={last}
+          />
+        );
+      })}
     </section>
   );
 }

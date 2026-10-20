@@ -14,9 +14,13 @@ Premium personal portfolio website for Khant Nyi Nyi (K-Nyi), performance market
 - Secondary dark: rgb(2, 31, 63) — deep teal
 
 ## Key Directories
-- `src/app/` — Next.js 16 App Router pages and layout
-- `src/components/` — 12+ reusable React components
-- `src/app/api/` — 8 API routes (auth + 6 content routes)
+- `src/app/(site)/` — the public site (page + chrome layout)
+- `src/app/admin/` — the private console for the Work section
+- `src/app/api/` — auth, content and upload routes
+- `src/components/` — reusable React components
+- `src/components/admin/` — console components
+- `src/components/visuals/` — inline SVG editorial plates
+- `src/lib/` — content layer, auth, uploads, validation
 - `content/` — JSON data files (case-studies, services, profile, tools, education, contact-leads)
 
 ## Commands
@@ -26,13 +30,26 @@ Premium personal portfolio website for Khant Nyi Nyi (K-Nyi), performance market
 - `npx tsc --noEmit` — TypeScript check
 
 ## Authentication
-- Admin sign-in: POST to `/api/auth/signin` with password from `ADMIN_PASSWORD` env var
-- Session: HttpOnly cookie `admin_session`, 7-day expiry
-- Sign out: GET `/api/auth/signout`
+- Admin console: `/admin` — sign in with `ADMIN_PASSWORD` from the environment
+- Session: HttpOnly cookie `admin_session`, an HMAC keyed by the password, 7-day expiry
+- Production **refuses to start** without `ADMIN_PASSWORD` set
+- Sign out: GET `/api/auth/signout` (or DELETE `/api/auth`)
+
+## Admin Console
+`/admin` manages the case studies behind the public Work section: create, edit,
+delete, reorder, and upload a campaign image. Changes write to
+`content/case-studies.json` and regenerate the public page.
+
+- Requires `ADMIN_PASSWORD`; see `docs/STAGE-3-PORTRAIT-RAIL-ADMIN.md`
+- Uploads are written to `public/uploads/` and served from `/api/uploads/<name>`
+  — `next start` does not serve files added to `public/` after a build
+- Needs a **writable** filesystem; it will not work on read-only serverless hosting
+- The public page declares `export const revalidate = 3600`. Without it,
+  `revalidatePath("/")` does not regenerate the static route
 
 ## Content Management
 All portfolio content managed via JSON files in `content/` directory:
-- `case-studies.json` — 3 case studies with reported/verified flags
+- `case-studies.json` — case studies with reported/verified flags
 - `services.json` — 3 capability groups (Meta Ads, Content Strategy, Marketing Analysis)
 - `profile.json` — Name, tagline, background, positioning, contact details
 - `education.json` — Completed + currently studying
@@ -42,12 +59,32 @@ All portfolio content managed via JSON files in `content/` directory:
 ## Verification Status
 - ✅ TypeScript: 0 errors
 - ✅ ESLint: 0 errors, 0 warnings
-- ✅ Dev server: http://localhost:3000
+- ✅ Production build: clean
+- ✅ Dev server: `npm run dev` still crashes on this CPU (SWC `SIGBUS`). Use
+  `npm run build && npm run start` — this is an environment constraint, not a defect.
 - ✅ All 10 required sections implemented
-- ✅ No fabricated campaign metrics
-- ✅ No generic design tropes (no purple gradients, glassmorphism, decorative blobs)
-- ✅ Responsive: 360px - 1920px
-- ✅ Accessibility: semantic HTML, focus states, alt text, prefers-reduced-motion
+- ✅ No fabricated campaign metrics — every figure comes from `content/case-studies.json`
+- ✅ Responsive: 360 / 390 / 768 / 1024 / 1440 / 1920px, no horizontal overflow
+- ✅ Accessibility: semantic HTML, single h1, visible focus states, skip link,
+  44px targets, reduced-motion and reduced-transparency support, 0 WCAG AA
+  contrast failures across ~250 rendered text samples
+
+## Content Source of Truth
+Section copy reads from `content/*.json` via `src/lib/content.ts`. Do not hardcode
+content that already exists in JSON. Case-study metrics render only when the JSON
+provides them — a missing figure is omitted, never invented.
+
+## Visual Direction
+Liquid Editorial. See `.stitch/DESIGN.md` for the design record and
+`docs/STAGE-2-LIQUID-EDITORIAL.md` / `docs/STAGE-3-PORTRAIT-RAIL-ADMIN.md` for the
+reasoning. Three rules to preserve:
+1. Glass is the navigation's signature — it appears on the rail and mobile dock only,
+   nowhere else on the page.
+2. Figures in `src/components/visuals/` are `aria-hidden` inline SVG plates and must
+   never carry numbers, axis ticks, dates or dashboard-like data. They are
+   illustration, not evidence.
+3. The rail collapses to an icon column, and the content gutter shrinks with it
+   (`--rail` on `<html data-rail>`). Do not hardcode the gutter width.
 
 ## Production Notes
 - Public site: knyimediabuyer.xyz (proposed)

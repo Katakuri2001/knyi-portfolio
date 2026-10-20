@@ -1,37 +1,57 @@
+import { Figure, SectionHead } from "@/components/editorial";
 import { Reveal } from "@/components/Reveal";
+import { SearchPerformanceFigure } from "@/components/visuals/SearchPerformanceFigure";
+import { getServices, getTools } from "@/lib/content";
 
-const EXPOSURE = [
-  "Meta Ads Manager",
-  "Canva",
-  "Google Sheets",
-  "ChatGPT",
-  "Facebook Marketing",
-  "Meta Pixel",
-  "UTM parameters",
-];
+/**
+ * Tools & capabilities — two honest lists, separated by weight not by colour.
+ *
+ * Practical exposure is set solid with teal markers. Currently learning is
+ * indented, lighter and marked with hollow rings, so the difference survives
+ * greyscale and colour-blind viewing. The figure beside it is captioned as an
+ * illustrative diagram, because SEO fundamentals appear here as an area being
+ * studied — not as a client result.
+ */
 
-const LEARNING = ["GA4", "GTM", "Google Ads / SEM", "TikTok Ads", "SEO fundamentals"];
+function ToolRows({
+  items,
+  variant,
+}: {
+  items: string[];
+  variant: "exposure" | "learning";
+}) {
+  const exposure = variant === "exposure";
 
-function ToolList({ items, muted }: { items: string[]; muted?: boolean }) {
   return (
-    <ul className="divide-y divide-border">
-      {items.map((tool) => (
+    <ul>
+      {items.map((tool, i) => (
         <li
           key={tool}
-          className="flex items-center justify-between gap-4 py-3.5 transition-colors duration-200 hover:bg-surface"
+          className={[
+            "flex items-center gap-4 border-t py-3 last:border-b",
+            exposure
+              ? "border-border"
+              : "border-dashed border-border/90 pl-4 text-muted-text",
+          ].join(" ")}
         >
-          <span
-            className={`font-geist-sans text-lg ${muted ? "text-muted-text" : "text-foreground"}`}
-          >
-            {tool}
+          <span className="w-6 flex-none font-geist-mono text-[0.6875rem] text-muted-text/70">
+            {String(i + 1).padStart(2, "0")}
           </span>
           <span
             aria-hidden="true"
             className={[
-              "h-1.5 w-1.5 flex-none rounded-full",
-              muted ? "bg-border" : "bg-accent-primary",
+              "h-2 w-2 flex-none rounded-full",
+              exposure ? "bg-accent-ink" : "border border-muted-text/60",
             ].join(" ")}
           />
+          <span
+            className={[
+              "flex-1 text-[0.9375rem]",
+              exposure ? "font-medium text-foreground" : "",
+            ].join(" ")}
+          >
+            {tool}
+          </span>
         </li>
       ))}
     </ul>
@@ -39,52 +59,76 @@ function ToolList({ items, muted }: { items: string[]; muted?: boolean }) {
 }
 
 export function ToolsSection() {
+  const services = getServices();
+  const tools = getTools();
+
   return (
-    <section id="tools" className="section-body scroll-mt-24 px-6">
-      <div className="mx-auto max-w-7xl">
-        <Reveal>
-          <p className="text-eyebrow mb-8 flex items-center gap-4 text-accent-secondary">
-            <span className="h-px w-12 bg-accent-secondary/40" aria-hidden="true" />
-            Tools &amp; capabilities
-          </p>
-        </Reveal>
+    <section id="tools" className="band-sunken relative">
+      <div className="shell section-body">
+        <SectionHead
+          index="05"
+          label="Tools & capabilities"
+          title={
+            <>
+              Practical tools,
+              <br />
+              {" "}<span className="text-muted-text">kept separate from learning.</span>
+            </>
+          }
+          lede="Tools used in real campaign work are listed first. Areas still being studied are listed second, and nothing on this page claims a certification or an official partnership."
+        />
 
-        <div className="grid gap-10 lg:grid-cols-12 lg:items-end lg:gap-8">
-          <Reveal delay={0.06} className="lg:col-span-7">
-            <h2 className="text-title text-foreground">Practical tools</h2>
-          </Reveal>
-          <Reveal delay={0.12} className="lg:col-span-4 lg:col-start-9">
-            <p className="text-muted-text leading-relaxed">
-              Tools used in real campaign work, kept separate from what is still
-              being learned.
-            </p>
-          </Reveal>
-        </div>
+        <div className="mt-14 grid gap-x-12 gap-y-14 md:mt-20 lg:grid-cols-12">
+          <div className="lg:col-span-4">
+            <Reveal>
+              <div className="flex items-baseline justify-between gap-4 border-t border-border pt-4">
+                <h3 className="text-eyebrow text-foreground">
+                  Practical exposure
+                </h3>
+                <span className="text-meta text-muted-text">
+                  {tools.practicalExposure.length} tools
+                </span>
+              </div>
+              <div className="mt-2">
+                <ToolRows items={tools.practicalExposure} variant="exposure" />
+              </div>
+            </Reveal>
+          </div>
 
-        <div className="mt-16 grid gap-14 md:grid-cols-2">
-          <Reveal delay={0.14}>
-            <div>
-              <h3 className="text-eyebrow mb-2 text-foreground">
-                Practical exposure
-              </h3>
-              <p className="mb-6 text-sm text-muted-text">
-                {EXPOSURE.length} tools in active use
-              </p>
-              <ToolList items={EXPOSURE} />
-            </div>
-          </Reveal>
+          <div className="lg:col-span-3 lg:col-start-6">
+            <Reveal delay={0.06}>
+              <div className="flex items-baseline justify-between gap-4 border-t border-dashed border-border pt-4">
+                <h3 className="text-eyebrow text-muted-text">
+                  Currently learning
+                </h3>
+                <span className="text-meta text-muted-text">
+                  {tools.currentlyLearning.length} areas
+                </span>
+              </div>
+              <div className="mt-2">
+                <ToolRows items={tools.currentlyLearning} variant="learning" />
+              </div>
 
-          <Reveal delay={0.2}>
-            <div>
-              <h3 className="text-eyebrow mb-2 text-muted-text">
-                Currently learning
-              </h3>
-              <p className="mb-6 text-sm text-muted-text">
-                {LEARNING.length} areas in progress
-              </p>
-              <ToolList items={LEARNING} muted />
-            </div>
-          </Reveal>
+              <div className="mt-8 border-t border-dashed border-border pt-4">
+                <p className="text-meta text-accent-ink">Also in progress</p>
+                <p className="mt-2 text-[0.875rem] leading-relaxed text-muted-text">
+                  {services.marketingAnalysis.learning}.{" "}
+                  {services.contentStrategy.learning}.
+                </p>
+              </div>
+            </Reveal>
+          </div>
+
+          <div className="lg:col-span-4 lg:col-start-9">
+            <Reveal delay={0.1}>
+              <Figure
+                ratio="3 / 2"
+                caption="Illustrative — not project output"
+              >
+                <SearchPerformanceFigure />
+              </Figure>
+            </Reveal>
+          </div>
         </div>
       </div>
     </section>

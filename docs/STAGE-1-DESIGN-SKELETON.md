@@ -176,14 +176,16 @@ and is **not started**.
 
 ## Known content drift
 
-The JSON files in `content/` and the hardcoded JSX disagree. Recorded here so it is
-not a surprise later — the JSON was chosen as authoritative when this is eventually
-resolved.
+**Resolved in Stage 2 (see `docs/STAGE-2-LIQUID-EDITORIAL.md`).** The root cause was
+that every section hardcoded a second copy of the strings in `content/`. Stage 2
+removed the copies and made the JSON the single source of truth at build time via
+`src/lib/content.ts`.
 
 - `case-studies.json` records `averageOrderValue: "US$3"` for the paratha business.
-  The hardcoded JSX never renders an average order value for that card.
-- `contact-leads.json` contains one placeholder row with every field empty. Not real
-  data; must not be seeded.
+  The hardcoded JSX never rendered it. **Now rendered**, because the case-study
+  section derives its metric list from whichever fields the JSON supplies.
+- `contact-leads.json` still contains one placeholder row with every field empty.
+  Not real data; still not seeded. The public site does not read it.
 
 ---
 

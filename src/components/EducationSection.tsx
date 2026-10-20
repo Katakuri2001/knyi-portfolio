@@ -1,93 +1,139 @@
+import { Note, SectionHead } from "@/components/editorial";
 import { Reveal } from "@/components/Reveal";
+import { getEducation } from "@/lib/content";
 
-const COMPLETED = [
-  { name: "Content Writing", detail: "The Burmese Content Academy", year: "2025" },
-  { name: "Graphic Design", detail: "Donato", year: "2023" },
-  { name: "Digital Marketing Basic", detail: "Digital Face", year: "2024" },
-];
+/**
+ * Education — a single timeline rather than two card columns.
+ *
+ * Years run down a vertical rail with a node each. Completed entries get a
+ * filled teal node and a year; ongoing entries get a hollow node and the word
+ * "Ongoing", so the distinction never rests on colour alone. Content is read
+ * from content/education.json, including the university status verbatim.
+ */
 
-const STUDYING = [
-  { name: "Digital Marketing Advanced", detail: "Ye Htet", year: null },
-  { name: "Digital Marketing Advanced", detail: "Bagan Digital Institute", year: null },
-];
-
-function Entry({
-  name,
-  detail,
-  year,
-  ongoing,
-}: {
+type Entry = {
   name: string;
-  detail: string;
-  year: string | null;
-  ongoing?: boolean;
-}) {
-  return (
-    <li className="group flex items-baseline justify-between gap-6 border-b border-border py-5 transition-colors duration-200 hover:border-accent-ink/40">
-      <div>
-        <p className="font-geist-sans text-lg font-medium leading-snug text-foreground">
-          {name}
-        </p>
-        <p className="mt-1 text-sm text-muted-text">{detail}</p>
-      </div>
-      <span
-        className={[
-          "font-method flex-none text-sm",
-          ongoing ? "text-accent-ink" : "text-muted-text",
-        ].join(" ")}
-      >
-        {ongoing ? "Ongoing" : year}
-      </span>
-    </li>
-  );
-}
+  institution: string;
+  year: string;
+  ongoing: boolean;
+};
 
 export function EducationSection() {
+  const { completed, currentlyStudying, university } = getEducation();
+
+  // Ongoing entries first, then completed ones newest-first.
+  const timeline: Entry[] = [
+    ...currentlyStudying.map((item) => ({
+      name: item.name,
+      institution: item.institution,
+      year: "Ongoing",
+      ongoing: true,
+    })),
+    ...[...completed]
+      .sort((a, b) => b.year - a.year)
+      .map((item) => ({
+        name: item.name,
+        institution: item.institution,
+        year: String(item.year),
+        ongoing: false,
+      })),
+  ];
+
   return (
-    <section id="education" className="section-body scroll-mt-24 px-6">
-      <div className="mx-auto max-w-7xl">
-        <Reveal>
-          <p className="text-eyebrow mb-8 flex items-center gap-4 text-accent-secondary">
-            <span className="h-px w-12 bg-accent-secondary/40" aria-hidden="true" />
-            Education &amp; professional development
-          </p>
-        </Reveal>
+    <section id="education" className="relative">
+      <div className="shell section-body">
+        <SectionHead
+          index="06"
+          label="Education & professional development"
+          title={
+            <>
+              Training, and
+              <br />
+              {" "}<span className="text-muted-text">what is still in progress.</span>
+            </>
+          }
+          lede="Short-form training completed between 2023 and 2025, and advanced digital marketing currently being studied. No completed university degree is claimed."
+        />
 
-        <div className="grid gap-10 lg:grid-cols-12 lg:items-end lg:gap-8">
-          <Reveal delay={0.06} className="lg:col-span-7">
-            <h2 className="text-title text-foreground">Education</h2>
-          </Reveal>
-          <Reveal delay={0.12} className="lg:col-span-4 lg:col-start-9">
-            <p className="text-muted-text leading-relaxed">
-              Second-year university studies, discontinued before graduation.
-            </p>
-          </Reveal>
-        </div>
+        <div className="mt-14 grid gap-x-12 gap-y-12 md:mt-20 lg:grid-cols-12">
+          <div className="lg:col-span-7">
+            <ol className="relative">
+              {/* Rail */}
+              <div
+                aria-hidden="true"
+                className="absolute bottom-3 left-[0.34375rem] top-3 w-px bg-border"
+              />
 
-        <div className="mt-16 grid gap-14 md:grid-cols-2">
-          <Reveal delay={0.14}>
-            <div>
-              <h3 className="text-eyebrow mb-4 text-foreground">Completed training</h3>
-              <ul>
-                {COMPLETED.map((entry) => (
-                  <Entry key={entry.name + entry.detail} {...entry} />
-                ))}
-              </ul>
-            </div>
-          </Reveal>
+              {timeline.map((entry, i) => (
+                <Reveal as="li" key={entry.name + entry.institution} delay={0.04 + i * 0.04}>
+                  <div className="relative pb-9 pl-8 last:pb-0">
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-0 top-[0.375rem] flex h-[0.6875rem] w-[0.6875rem] items-center justify-center"
+                    >
+                      {entry.ongoing ? (
+                        <span
+                          className="block h-[0.6875rem] w-[0.6875rem] rounded-full border-2 border-accent-ink bg-background"
+                          style={{ boxShadow: "0 0 0 4px var(--color-background)" }}
+                        />
+                      ) : (
+                        <span
+                          className="block h-[0.6875rem] w-[0.6875rem] rounded-full bg-accent-ink"
+                          style={{ boxShadow: "0 0 0 4px var(--color-background)" }}
+                        />
+                      )}
+                    </span>
 
-          <Reveal delay={0.2}>
-            <div>
-              <h3 className="text-eyebrow mb-4 text-muted-text">
-                Currently studying
-              </h3>
-              <ul>
-                {STUDYING.map((entry) => (
-                  <Entry key={entry.name + entry.detail} {...entry} ongoing />
-                ))}
-              </ul>
-            </div>
-          </Reveal>
+                    <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-border/80 pb-4">
+                      <div className="min-w-0">
+                        <p className="text-[1.0625rem] font-medium leading-snug text-foreground">
+                          {entry.name}
+                        </p>
+                        <p className="mt-0.5 text-[0.9375rem] text-muted-text">
+                          {entry.institution}
+                        </p>
+                      </div>
+                      <span
+                        className={[
+                          "flex-none text-meta",
+                          entry.ongoing ? "text-accent-ink" : "text-muted-text",
+                        ].join(" ")}
+                      >
+                        {entry.ongoing ? (
+                          <span className="inline-flex items-center gap-2">
+                            <span
+                              aria-hidden="true"
+                              className="inline-block h-1.5 w-1.5 rounded-full border border-accent-ink"
+                            />
+                            Ongoing
+                          </span>
+                        ) : (
+                          entry.year
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                </Reveal>
+              ))}
+            </ol>
+          </div>
+
+          <div className="lg:col-span-4 lg:col-start-9">
+            <Reveal delay={0.1}>
+              <div className="border-t border-border pt-5">
+                <p className="text-eyebrow mb-4 text-accent-ink">
+                  University
+                </p>
+                <Note label="Status">{university.status}</Note>
+
+                <p className="mt-6 leading-relaxed text-muted-text">
+                  Professional development has continued through short courses
+                  and self-directed study since then, with practical campaign
+                  work running alongside from 2023.
+                </p>
+              </div>
+            </Reveal>
+          </div>
         </div>
       </div>
     </section>

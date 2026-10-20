@@ -1,83 +1,115 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import fs from "fs";
-import path from "path";
+import { revalidatePath } from "next/cache";
+import { hasValidSession, isSameOrigin } from "@/lib/auth";
+import {
+  createId,
+  normaliseOrder,
+  sanitiseCaseStudy,
+  ValidationError,
+} from "@/lib/case-studies";
+import { readJson, writeJson, type CaseStudy } from "@/lib/content";
+import { removeUpload } from "@/lib/uploads";
 
-const checkAuth = (request: NextRequest) => {
-  const cookie = request.cookies.get("admin_session");
-  return cookie && cookie.value === "authenticated";
-};
+export const runtime = "nodejs";
+
+const FILE = "case-studies.json";
+
+function load(): CaseStudy[] {
+  return readJson<CaseStudy[]>(FILE);
+}
+
+function save(studies: CaseStudy[]) {
+  writeJson(FILE, normaliseOrder(studies));
+  // The public page is statically prerendered and reads this file at render
+  // time, so a revalidation is what makes a new case study appear on /.
+  revalidatePath("/");
+}
+
+function unauthorised() {
+  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+}
+
+function crossOrigin() {
+  return NextResponse.json({ error: "Cross-origin request rejected" }, { status: 403 });
+}
 
 export async function GET(request: NextRequest) {
-  if (!checkAuth(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const filePath = path.join(process.cwd(), "content", "case-studies.json");
-  const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-
-  return NextResponse.json(data);
+  if (!hasValidSession(request)) return unauthorised();
+  return NextResponse.json(load());
 }
 
 export async function POST(request: NextRequest) {
-  if (!checkAuth(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!hasValidSession(request)) return unauthorised();
+  if (!isSameOrigin(request)) return crossOrigin();
 
   try {
     const body = await request.json();
+    const study = sanitiseCaseStudy(body);
+    const existing = load();
+    const created: CaseStudy = {
+      ...study,
+      id: createId(),
+      order: existing.length,
+    };
 
-    const filePath = path.join(process.cwd(), "content", "case-studies.json");
-    const existing = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-    
-    const item = { ...body, id: body.id || `c${Date.now()}` };
-    const updated = [...existing, item];
-    
-    fs.writeFileSync(filePath, JSON.stringify(updated, null, 2));
-    return NextResponse.json(updated);
-  } catch {
+    save([...existing, created]);
+    return NextResponse.json(created, { status: 201 });
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
     return NextResponse.json({ error: "Failed to create" }, { status: 500 });
   }
 }
 
 export async function PUT(request: NextRequest) {
-  if (!checkAuth(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!hasValidSession(request)) return unauthorised();
+  if (!isSameOrigin(request)) return crossOrigin();
 
   try {
-    const body = await request.json();
-    const { id } = body;
+    const body = (await request.json()) as { id?: string } & Record<string, unknown>;
+    const existing = load();
+    const index = existing.findIndex((item) => item.id === body.id);
 
-    const filePath = path.join(process.cwd(), "content", "case-studies.json");
-    const existing = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-    const updated = existing.map((item: { id: string }) =>
-      item.id === id ? { ...item, ...body } : item
-    );
+    if (index === -1) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
 
-    fs.writeFileSync(filePath, JSON.stringify(updated, null, 2));
+    const updated = sanitiseCaseStudy(body, existing[index]);
+    const next = [...existing];
+    next[index] = updated;
+    save(next);
+
     return NextResponse.json(updated);
-  } catch {
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
     return NextResponse.json({ error: "Failed to update" }, { status: 500 });
   }
 }
 
 export async function DELETE(request: NextRequest) {
-  if (!checkAuth(request)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!hasValidSession(request)) return unauthorised();
+  if (!isSameOrigin(request)) return crossOrigin();
+
+  const id = request.nextUrl.searchParams.get("id");
+  if (!id) {
+    return NextResponse.json({ error: "id is required" }, { status: 400 });
   }
 
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
+  const existing = load();
+  const target = existing.find((item) => item.id === id);
 
-    const filePath = path.join(process.cwd(), "content", "case-studies.json");
-    const existing = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-    const updated = existing.filter((item: { id: string }) => item.id !== id);
-
-    fs.writeFileSync(filePath, JSON.stringify(updated, null, 2));
-    return NextResponse.json(updated);
-  } catch {
-    return NextResponse.json({ error: "Failed to delete" }, { status: 500 });
+  if (!target) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+
+  // Remove the uploaded file too, so `public/uploads` does not accumulate
+  // orphans every time a case study is deleted.
+  if (target.image) removeUpload(target.image);
+
+  save(existing.filter((item) => item.id !== id));
+  return NextResponse.json({ success: true });
 }

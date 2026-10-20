@@ -1,13 +1,8 @@
 import { NextResponse } from "next/server";
+import { clearSessionCookie } from "@/lib/auth";
 
 export async function GET() {
   const response = NextResponse.json({ success: true });
-  response.cookies.set("admin_session", "", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    path: "/",
-    maxAge: 0,
-  });
+  clearSessionCookie(response);
   return response;
 }

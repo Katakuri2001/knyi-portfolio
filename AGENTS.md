@@ -28,6 +28,20 @@ Premium personal portfolio website for Khant Nyi Nyi (K-Nyi), performance market
 - `npm run build` — build production (Turbopack)
 - `npm run lint` — ESLint type-check
 - `npx tsc --noEmit` — TypeScript check
+- `npm run build:pages` — static export for GitHub Pages into ./out
+- `npm run deploy:pages` — build the export and publish it to the gh-pages branch
+
+## Deployment
+- **Live at https://katakuri2001.github.io/knyi-portfolio/** — published from the
+  `gh-pages` branch.
+- The published site is the **public page only**. GitHub Pages cannot run a
+  server, so `/admin` and `/api/*` are not deployed. Edit content locally
+  (or in the local console), commit, and push.
+- `.github/workflows/deploy-pages.yml` is the automatic route, but it is blocked
+  by a **billing lock on the GitHub account** — every workflow fails with "The
+  job was not started because your account is locked due to a billing issue".
+  Once billing is cleared, switch Settings → Pages → Source to "GitHub Actions".
+- See `docs/STAGE-4-GITHUB-PAGES.md`.
 
 ## Authentication
 - Admin console: `/admin` — sign in with `ADMIN_PASSWORD` from the environment

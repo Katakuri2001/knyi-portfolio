@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "build:pages": "node scripts/build-pages.mjs",
-    "serve:pages": "npx --yes serve@14 out"
+    "serve:pages": "npx --yes serve@14 out",
+    "deploy:pages": "node scripts/deploy-pages.mjs"
   },
   "dependencies": {
     "next": "16.4.0",

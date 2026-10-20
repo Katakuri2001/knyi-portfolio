@@ -62,7 +62,7 @@ export function Panel({
   className?: string;
 }) {
   return (
-    <section className={`border border-border bg-surface ${className}`}>
+    <section className={`glass-card ${className}`}>
       {title || action ? (
         <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-border px-5 py-3.5">
           <div>
@@ -130,7 +130,7 @@ export function StatCard({
     Number.isFinite(comparison);
 
   return (
-    <div className="border border-border bg-surface p-5">
+    <div className="glass-card p-5">
       <p className="text-meta text-muted-text">{label}</p>
 
       {unavailable ? (
@@ -357,7 +357,7 @@ export function TrendChart({
         </summary>
         <div className="mt-2 max-h-56 overflow-auto">
           <table className="w-full text-left text-[0.8125rem]">
-            <thead className="sticky top-0 bg-surface">
+            <thead className="sticky top-0 bg-[rgb(252_253_254)]">
               <tr className="border-b border-border text-meta text-muted-text">
                 <th className="py-1.5 pr-4 font-medium">Date</th>
                 <th className="py-1.5 text-right font-medium">Value</th>

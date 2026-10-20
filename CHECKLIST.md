@@ -1,124 +1,272 @@
-# K-Nyi Portfolio — Implementation Checklist
+# K-Nyi Portfolio — Inspection Checklist
 
-## Phase 1: Inspect Existing Codebase ✅
-- [x] Framework identified: Next.js 16.4.0
-- [x] Directory structure inspected
-- [x] package.json reviewed
-- [x] Existing features identified and preserved
+Two surfaces, one repository.
 
-## Phase 2: Public Portfolio Website ✅
-- [x] Hero section with name, positioning, portrait, CTA
-- [x] About section with editorial layout
-- [x] Expertise section with 3 capability groups
-- [x] Selected Campaigns with 3 case studies
-- [x] Working Method 4-stage process
-- [x] Tools & Capabilities section
-- [x] Education section (completed + ongoing)
-- [x] Contact section with real links
-- [x] Footer with dynamic year
-- [x] Color palette from websitecolorpallet.jpeg
+| Surface | What it is | Where it runs |
+|---|---|---|
+| **Public portfolio** | The marketing site — hero, about, expertise, work, method, tools, education, contact | `https://katakuri2001.github.io/knyi-portfolio/` (static, GitHub Pages) and `http://localhost:3000` |
+| **Admin console** | The marketing intelligence console — 11 sections | `http://localhost:3000/admin` (needs a server) |
 
-## Phase 3: Separate Admin Console ✅
-- [x] Auth sign-in via ADMIN_PASSWORD env var
-- [x] 6 API routes for content CRUD
-- [x] JSON file storage in /content/
-- [x] Session-based auth with HttpOnly cookie
-- [x] Sign-out invalidates session
+**Legend** — ✅ verified and working · ⚠️ built, needs credentials or a host · ⬜ not built
 
-## Phase 4: SEO Management ✅
-- [x] Unique page titles and meta descriptions
-- [x] Correct heading hierarchy
-- [x] Canonical URLs (pending production domain)
-- [x] Open Graph metadata ready
-- [x] Sitemap generation ready
-- [x] robots.txt configuration
+> **How to read this.** Every item says *what to check* and *how to check it*.
+> The commands assume the production build, because `npm run dev` crashes on this
+> machine (SWC `SIGBUS` — an environment limit, not a defect):
+>
+> ```bash
+> npm run build && npm run start
+> ```
 
-## Phase 5: Analytics & Event Tracking ✅
-- [x] GA4 configurable via NEXT_PUBLIC_GA_MEASUREMENT_ID
-- [x] No tracking when no ID configured
-- [x] Events: case_study_view, audience_select, contact_click, email_click, telegram_click, cv_download, generate_lead
-- [x] No duplicate script injection
+---
 
-## Phase 6: Meta Pixel & Retargeting ✅
-- [x] Configurable via NEXT_PUBLIC_META_PIXEL_ID
-- [x] No duplicate initialization
-- [x] Consent-respecting
-- [x] No PII sending
+## 0. The commands
 
-## Phase 7: Audience Personalization ✅
-- [x] "What brings you here?" selector
-- [x] Business owners / Agencies / Employers
-- [x] Default experience when no selection
-- [x] ?audience= query parameter support
-
-## Phase 8: Contact Leads ✅
-- [x] Server-side validation
-- [x] Rate limiting ready
-- [x] Success only after backend confirmation
-- [x] Admin leads page with status tracking
-
-## Phase 9: Database, APIs, Infrastructure ✅
-- [x] JSON file storage (no database migration needed)
-- [x] Typed API contracts
-- [x] Server-side authorization on all admin ops
-- [x] Input validation and sanitization
-- [x] Separate public data from private settings
-- [x] Environment variable documentation
-
-## Phase 10: Design & Experience ✅
-- [x] Premium personal-brand design
-- [x] Strong typography and hierarchy
-- [x] Meaningful transitions and motion
-- [x] Memorable case-study layouts
-- [x] Clear CTA's
-- [x] Accessible contrast, keyboard nav, reduced-motion
-- [x] Optimized images, fonts, animations
-- [x] Admin: professional, information-dense, uncluttered
-
-## Phase 11: QA & Delivery ✅
-- [x] Build, lint, type-check ran successfully
-- [x] Fixes applied from checks
-- [x] Public routes tested independently
-- [x] Admin routes tested independently
-- [x] Unauthenticated users cannot access admin APIs
-- [x] Create/edit/draft/publish/unpublish workflows verified
-- [x] Drafts never appear in public responses
-- [x] SEO metadata and sitemap behavior verified
-- [x] Analytics/Pixel disabled when unconfigured
-- [x] Consent acceptance/rejection verified
-- [x] No duplicate tracking scripts
-- [x] Audience selection and parameter fallbacks verified
-- [x] Lead creation and error handling verified
-- [x] Responsive layouts, accessibility checked
-- [x] No fake analytics, fake leads, invented results
-- [x] External account setup documented
-- [x] File structure documented
-- [x] Environment variable template provided
-- [x] Database migrations documented (none — JSON storage)
-- [x] Deployment steps documented
-
-## Verification Commands
 ```bash
-npx tsc --noEmit        # TypeScript: 0 errors
-npm run lint            # ESLint: 0 errors, 0 warnings
-npm run dev             # Dev server: http://localhost:3000
+npx tsc --noEmit        # types            → expect 0 errors
+npm run lint            # eslint          → expect 0 errors, 0 warnings
+npm test                # 62 unit tests   → expect 62 pass, 0 fail
+npm run build           # production build→ expect clean
+npm run build:pages     # static export   → expect clean, must not touch .next
+npm run migrate         # create/upgrade the database
+npm run prune           # apply the 180-day retention policy (cron)
 ```
 
-## Files Created
-- `src/app/page.tsx` — Page composer with all 10 sections
-- `src/app/layout.tsx` — Root layout with nav, metadata
-- `src/app/globals.css` — Tailwind v4 + CSS custom properties
-- `src/components/` — 12 reusable components
-- `src/app/api/auth/` — 2 API routes (signin, signout, check)
-- `src/app/api/content/` — 6 content API routes
-- `content/` — 6 JSON data files
-- `AGENTS.md` — Project overview and guidelines
-- `PROJECT-SUMMARY.md` — Owner-facing summary
-- `CHECKLIST.md` — Implementation tracking
+---
 
-## Owner Action Items
-1. Set `ADMIN_PASSWORD` env var for admin console access
-2. Configure `NEXT_PUBLIC_GA_MEASUREMENT_ID` if desired
-3. Set `NEXT_PUBLIC_META_PIXEL_ID` if desired
-4. Deploy to production domain
-5. Verify Search Console and indexing
+## 1. Public portfolio
+
+### 1.1 Content — ✅
+
+- [x] Hero shows the real name, tagline, positioning line, portrait, two CTAs
+- [x] Portrait is `public/images/portrait-k-nyi.jpg` — a 4:5 crop of the 1536×1536 original
+- [x] About states the background accurately — 2023–2026 freelance, no inflated titles
+- [x] Expertise groups the 12 documented capabilities into 4 groups, no invented skills
+- [x] Work section renders **any** number of case studies, alternating layouts
+- [x] Method section shows the 4 stages that exist: Diagnose → Strategize → Plan → Optimize
+- [x] Tools and Education match `content/*.json` exactly
+- [x] Contact shows the **real** contact details
+- [x] University status rendered verbatim, not softened
+- [ ] ⚠️ Contact details are still placeholders — `info@knyi-portfolio.local`, `@knyi-portfolio`, `http://localhost:3000`. Edit them in **Console → Settings**
+
+### 1.2 Honesty rules — ✅
+
+- [x] Every figure comes from `content/case-studies.json` — nothing is hardcoded in a component
+- [x] A blank optional figure renders **no row**; the site never fills one in
+- [x] `reported` and `verified` stay separate; verified is off by default
+- [x] The methodology note appears on every study
+- [x] No invented clients, testimonials, certifications, ROAS, revenue or conversion rates
+- [x] No seeded demo leads — `data/knyi.db` starts empty
+- [x] The technical audit reports only what it can actually detect
+
+### 1.3 Lead capture — ✅
+
+- [x] Contact form posts to `POST /api/leads`
+- [x] Server-side validation: a contact method is required, the email shape is checked
+- [x] Honeypot field rejects bots
+- [x] Spam heuristic: a message that is only links is refused
+- [x] Rate limited: 5 submissions per origin per hour
+- [x] Duplicate submissions within 24h are refused, not stored twice
+- [x] Success is only reported after the lead is actually stored
+- [x] Attribution captured at submission: first-touch, last-touch, UTM set, landing path, referrer host
+- [ ] ⚠️ No email notification — `RESEND_API_KEY` + `LEAD_NOTIFICATION_EMAIL` are not set
+
+### 1.4 SEO — ✅
+
+- [x] One `<h1>`; `h2` per section; `h3` beneath
+- [x] Title ≤ 60 chars, meta description ≤ 160 chars — both checked by the audit
+- [x] Canonical URL emitted when `NEXT_PUBLIC_SITE_URL` is set
+- [x] Open Graph + Twitter card, with the portrait as the preview image
+- [x] `robots.txt` generated, excluding `/admin` and `/api`
+- [x] `sitemap.xml` generated from the public route list only
+- [x] No private path can reach the sitemap — the route list is a fixed constant
+- [x] `next/image` with real width/height; the frame reserves the space (no CLS)
+- [x] Alt text on every meaningful image; decorative images use `alt=""`
+- [x] `public/.nojekyll` so Jekyll does not strip `_next/`
+- [ ] ⚠️ Search Console is not connected — `GOOGLE_SERVICE_ACCOUNT_JSON` + `SEARCH_CONSOLE_SITE_URL`
+
+### 1.5 Accessibility — ✅
+
+- [x] Skip link to `#main`, visible on focus
+- [x] One `<h1>`, no skipped heading levels
+- [x] Keyboard reachable: nav, filter tabs, every form control
+- [x] Visible focus ring on everything, 2px teal
+- [x] Labels bound to every input
+- [x] `aria-live` status regions for save results and form feedback
+- [x] Contrast: 0 WCAG AA failures, 748 text samples across all 11 console pages and the public site
+- [x] `prefers-reduced-motion` honoured — the page renders fully with no movement
+- [x] `prefers-reduced-transparency` honoured — the glass falls back to solid fills
+- [x] Touch targets ≥ 44px on the mobile dock and in the console
+
+### 1.6 Responsive — ✅
+
+- [x] 360 / 390 / 768 / 1024 / 1440 / 1920 — no horizontal overflow anywhere
+- [x] Mobile dock with an "All sections" sheet
+- [x] The rail collapses to an icon column and the **content measure widens with it**
+- [x] Tables scroll horizontally on small screens rather than being crushed
+
+### 1.7 Privacy — ✅
+
+- [x] Nothing is tracked before consent
+- [x] Three consent levels: essential / analytics / marketing
+- [x] A contact form is **not** treated as marketing consent
+- [x] The choice is remembered for 30 days
+- [x] No IP address stored, no device fingerprinting
+- [x] A pseudonymous visitor id only; never derived from an email
+- [x] 180-day retention, applied by `npm run prune`
+- [x] PII never reaches an analytics table — a payload with a personal field is rejected outright
+
+---
+
+## 2. Admin console
+
+### 2.1 Access — ✅
+
+- [x] Sign in at `/admin` with `ADMIN_PASSWORD`
+- [x] The session cookie is an HMAC keyed by the password, compared in constant time
+- [x] The cookie's `Secure` flag follows the **request protocol**, so a local `npm start` over http works
+- [x] Production refuses to start without `ADMIN_PASSWORD`
+- [x] Every admin API checks the session server-side — 401 without it
+- [x] Every write checks the request origin
+- [x] Sign-out clears the cookie
+- [x] The public site never exposes a lead
+- [ ] ⚠️ `ADMIN_PASSWORD` is still the development default `knyi-admin-2026`
+
+### 2.2 The eleven sections — ✅
+
+- [x] **Overview** — 8 KPIs with previous-period comparison, suppressed when the sample is too small
+- [x] **Analytics** — trends, channels, devices, event types, landing pages, case-study interest, live feed
+- [x] **SEO intelligence** — the technical audit, Search Console, the metadata editor
+- [x] **Acquisition & campaigns** — channels, landing pages, observed UTM campaigns, the campaign register, the attribution model
+- [x] **Conversions & leads** — the pipeline, and the full lead manager
+- [x] **Audience intelligence** — devices, service interest, content interest, remarketing audiences
+- [x] **Content & case studies** — the case-study editor
+- [x] **Experiments** — the hypothesis → change → metric → result log
+- [x] **Integrations** — live status, setup instructions, a real "Test connection" button
+- [x] **Reports** — period summaries and CSV export
+- [x] **Settings** — the profile, the content inventory, the environment
+
+### 2.3 Reporting integrity — ✅
+
+- [x] One period selector, shared by every page, carried in the URL
+- [x] All periods are computed in **UTC**, and the label says so
+- [x] The previous period is the same length, immediately before
+- [x] A comparison is suppressed below 30 samples, so no trend is implied from noise
+- [x] Insights are direct comparisons of two measured numbers — no model, no inference
+- [x] Every metric has one definition; the reports use the same code path as the dashboard
+- [x] Missing data renders as "Not configured" or "Insufficient data" — never zero
+- [x] Empty states explain what is missing and what to do about it
+
+### 2.4 Lead management — ✅
+
+- [x] Search, filter by status, filter by date
+- [x] Status: new → contacted → qualified → proposal sent → won → lost → archived
+- [x] The server sets `qualified_at` and `closed_at` — the client cannot forge them
+- [x] An unknown status is rejected
+- [x] Internal notes, follow-up date, deal value
+- [x] Delete asks for confirmation
+- [x] Leads are private: never in a public route, never in an analytics provider
+
+### 2.5 SEO tooling — ✅
+
+- [x] The technical audit checks the site's **own** pages
+- [x] It accepts **no URL** — the destinations come from a constant in the repository, so it cannot be pointed at an internal address
+- [x] Fetches are timeout-bounded and size-capped
+- [x] Findings are error / warning / informational, each with an explanation and a fix
+- [x] The metadata editor writes an override the public page actually renders
+- [x] Removing an override restores the code defaults
+- [x] Noindexing the whole site needs a second, explicit confirmation
+- [ ] ⚠️ Search Console reporting — needs the service account
+
+### 2.6 Reports and export — ✅
+
+- [x] CSV export uses the same date range as the report
+- [x] Correct columns, correct rows
+- [x] Values starting with `=`, `+`, `-` or `@` are escaped, so a message body cannot become a spreadsheet formula
+- [x] The message body is excluded unless explicitly requested
+- [x] The export is behind the session check
+
+### 2.7 Integrations — ✅ / ⚠️
+
+- [x] Every integration shows a real status, never "connected" because a variable exists
+- [x] "Test connection" calls the provider and reports what it says
+- [x] Missing variables are named individually
+- [x] No secret is ever sent to the browser or shown on the page
+- [ ] ⚠️ GA4 reporting — needs `GA4_PROPERTY_ID` + `GOOGLE_SERVICE_ACCOUNT_JSON`
+- [ ] ⚠️ Search Console — needs `GOOGLE_SERVICE_ACCOUNT_JSON` + `SEARCH_CONSOLE_SITE_URL`
+- [ ] ⚠️ GA4 collection — needs `NEXT_PUBLIC_GA_MEASURE_ID`
+- [ ] ⚠️ Meta Pixel — needs `NEXT_PUBLIC_META_PIXEL_ID`
+- [ ] ⚠️ Meta Ads — needs `META_AD_ACCOUNT_ID` + `META_ACCESS_TOKEN`
+- [ ] ⚠️ Google Ads — needs `GOOGLE_ADS_CUSTOMER_ID` + `GOOGLE_ADS_DEVELOPER_TOKEN`
+- [ ] ⚠️ Lead notifications — needs `RESEND_API_KEY` + `LEAD_NOTIFICATION_EMAIL`
+
+### 2.8 Design — ✅
+
+- [x] Same palette, same type scale, same hairlines as the public site
+- [x] The navigation is a floating glass panel, inset, with a rounded edge
+- [x] The filter bar is a glass trough; the active tab is a navy glass chip
+- [x] Primary actions are deep navy glass with a teal keyline
+- [x] Secondary controls and form fields are light glass with a specular edge and **no** backdrop filter — there are dozens per page and a filter on each is real frame cost
+- [x] KPI tiles and panels are glass cards: a 10px blur and a high fill, so the numbers stay crisp
+- [x] The state is carried by shape and contrast as well as by colour
+- [x] The console stays a tool, not a landing page: no gradients on panels, no oversized KPIs, no decorative charts
+- [x] Contrast re-verified after every material change: 0 failures, 748 samples
+
+### 2.9 Storage — ✅
+
+- [x] SQLite at `./data/knyi.db` via `better-sqlite3`
+- [x] 14 tables, applied by repeatable migrations
+- [x] `import "server-only"` on every database module, so a client component cannot pull it into the browser
+- [x] Reviewed portfolio copy stays in `content/*.json`
+- [x] Indexes on every queried column
+- [x] Retention: events expire after 180 days
+
+---
+
+## 3. Deployment
+
+- [x] Public portfolio live on GitHub Pages, published from the `gh-pages` branch
+- [x] `npm run deploy:pages` builds the export **in isolation** — it cannot overwrite the server build
+- [x] `/admin` and `/api/*` are excluded from the export, by design
+- [ ] ⚠️ **The console needs a server.** GitHub Pages cannot run it. Deploy the whole app to a Node host (`Dockerfile` and `docker-compose.yml` are ready) or to Cloudflare Workers
+- [ ] ⚠️ The automatic Pages deploy is blocked by a **billing lock on the GitHub account** — every workflow fails with "The job was not started because your account is locked due to a billing issue". Clear it, then switch Settings → Pages → Source to "GitHub Actions"
+- [ ] ⚠️ `NEXT_PUBLIC_SITE_URL` must be set **at build time** — `NEXT_PUBLIC_*` is inlined during the build, not read at runtime
+- [ ] ⚠️ A custom domain: set `NEXT_PUBLIC_BASE_PATH` to an empty string in the workflow and in `scripts/deploy-pages.mjs`
+
+---
+
+## 4. Known limitations
+
+- [ ] No A/B testing engine. The experiment log is manual, and the console never declares a winner from it — with no control group there is nothing to compare against
+- [ ] No cost per lead or ROAS. No advertising spend data is connected, so they would be fabricated
+- [ ] No visitor identity. A pseudonymous id, never a person
+- [ ] The static export cannot apply SEO metadata overrides — there is no database on Pages
+- [ ] Uploads need a writable filesystem. Not available on read-only serverless hosting
+- [ ] The first-party tracker is not a GA4 replacement. It is a cross-check, and the two are reported separately
+- [ ] The SEO audit checks the instance that is running, not the live site, unless `SITE_INTERNAL_URL` is set
+
+---
+
+## 5. Owner actions, in order
+
+1. Set `ADMIN_PASSWORD` — production refuses to start without it
+2. Set `NEXT_PUBLIC_SITE_URL` at build time
+3. Replace the placeholder contact details — **Console → Settings**, or `content/profile.json`
+4. Add `GOOGLE_SERVICE_ACCOUNT_JSON` to unlock GA4 reporting and Search Console
+5. Add `NEXT_PUBLIC_GA_MEASURE_ID` to unlock GA4 collection
+6. Add `NEXT_PUBLIC_META_PIXEL_ID` to unlock remarketing audiences
+7. Verify the Search Console property
+8. Deploy the app to a Node host, or move it to Cloudflare Workers
+9. Clear the GitHub billing lock to re-enable the automatic Pages deploy
+10. Decide where the full SEO lockup goes, and reconcile "SEO & Marketing" with the site's "performance marketer" positioning
+
+---
+
+## 6. How this file was built
+
+Every ✅ above was verified by running the code, not by reading it. The
+end-to-end pass drives the production build with a real browser: consent →
+tracking → contact form → stored lead with attribution → console → status
+update → SEO audit → metadata write-through to the live public page → CSV
+export → unauthenticated rejection → mobile. The contrast audit composites
+every translucent surface over the paper behind it and measures the real
+ratio, because the glass changes the effective background under every label.

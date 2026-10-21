@@ -107,7 +107,14 @@ async function main() {
 
     const tree = capture("git", ["write-tree"], withIndex);
     const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-    const message = `Deploy ${stamp}\n\nStatic export of the public site, published to the gh-pages branch.`;
+
+    // Where the export came from. The script publishes whatever is in the
+    // working tree, so the published history says which branch and which
+    // commit produced it — otherwise a deploy from a working branch and a
+    // deploy from `main` are indistinguishable after the fact.
+    const source = capture("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
+    const sourceCommit = capture("git", ["rev-parse", "--short", "HEAD"]);
+    const message = `Deploy ${stamp}\n\nStatic export of the public site, published to the gh-pages branch.\n\nSource: ${source}@${sourceCommit}`;
 
     const commit = capture("git", ["commit-tree", tree, "-m", message]);
 
@@ -120,6 +127,7 @@ async function main() {
 
   console.log(`\nPublished to ${ORIGIN}/`);
   console.log(`  Served from the '${branch}' branch.`);
+  console.log(`  Built from ${source}@${sourceCommit}.`);
   console.log(`  GitHub can take a minute or two to publish a new commit.`);
 }
 

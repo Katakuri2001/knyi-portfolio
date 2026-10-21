@@ -29,6 +29,17 @@ contact form and the analytics ingestion have nowhere to live.
 deployment, not a replacement. Both URLs serve the public portfolio until you
 decide to point the domain at one of them.
 
+## 1a. Which branch is what
+
+- **`main`** is the deployed state of the public site. It is left alone.
+- **`feature/cloudflare-workers`** is the working branch. This stage lives
+  there, and incoming changes land there too.
+
+`npm run deploy:pages` publishes the **working tree** to the `gh-pages`
+branch, and the commit it writes records the branch and commit it was built
+from. Read that line to know which content went live. The Pages workflow
+builds from `main`.
+
 ---
 
 ## 2. What changed in the code

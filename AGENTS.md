@@ -71,6 +71,17 @@ Queries use **positional** `?` parameters, never named ones: `better-sqlite3`
 spells named parameters `@name` and D1 spells them `:name`, and only
 positional works in both.
 
+## Branches
+- **`main`** — the deployed state of the public site. It is **not** where
+  incoming work happens. The GitHub Pages workflow builds from it, and the
+  Pages export publishes from the checkout it runs in.
+- **`feature/cloudflare-workers`** — the working branch. All new work lands
+  here and is pushed there. It holds the Cloudflare Workers migration.
+
+`npm run deploy:pages` publishes whatever is in the **working tree**, so the
+commit it writes to the `gh-pages` branch records the source branch and commit
+it was built from. Check that line before assuming which content went live.
+
 ## Deployment
 There are two live surfaces, and they are independent.
 

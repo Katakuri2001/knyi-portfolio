@@ -76,7 +76,16 @@ export function ConsentBanner() {
       role="dialog"
       aria-modal="false"
       aria-label="Privacy choices"
-      className="fixed inset-x-3 bottom-3 z-40 sm:inset-x-auto sm:bottom-5 sm:left-5 sm:max-w-md"
+      /* The card is fixed to the corner, so it has to keep clear of the two
+         other fixed things: the mobile dock, and the floating rail.
+
+         Below `lg` the dock is pinned to the bottom, so the card sits above
+         it. From `lg` the dock is gone and the rail takes the left edge — so
+         the card moves to the right, which also keeps it off the hero's
+         paragraph and its "Start a project" button. The right column holds
+         the portrait, and the portrait's caption repeats what the "At a
+         glance" column already says, so that is the cheapest thing to cover. */
+      className="fixed inset-x-3 bottom-[5.75rem] z-40 sm:inset-x-auto sm:bottom-[5.75rem] sm:left-5 sm:max-w-md lg:bottom-5 lg:left-auto lg:right-5 lg:max-w-sm"
     >
       <div className="glass-elevated rounded-xl p-5 shadow-lg">
         <p className="text-eyebrow text-accent-ink">Privacy</p>

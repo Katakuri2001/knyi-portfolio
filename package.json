@@ -14,9 +14,9 @@
     "migrate": "node --conditions=react-server --experimental-strip-types scripts/migrate.mjs",
     "seed": "node --conditions=react-server --experimental-strip-types scripts/seed-content.mjs",
     "prune": "node --conditions=react-server --experimental-strip-types scripts/prune-events.mjs",
-    "build:cloudflare": "opennextjs-cloudflare build",
-    "deploy:cloudflare": "opennextjs-cloudflare build && wrangler deploy",
-    "preview:cloudflare": "opennextjs-cloudflare build && wrangler dev",
+    "build:cloudflare": "node scripts/build-cloudflare.mjs",
+    "deploy:cloudflare": "node scripts/deploy-cloudflare.mjs",
+    "preview:cloudflare": "node scripts/build-cloudflare.mjs && wrangler dev",
     "d1:migrate": "wrangler d1 migrations apply DB --local",
     "d1:migrate:remote": "wrangler d1 migrations apply DB --remote"
   },

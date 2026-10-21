@@ -325,6 +325,29 @@ body {
     0 12px 28px -20px rgb(2 31 63 / 0.35);
 }
 
+/* The privacy dialog.
+
+   This one is not a decorative grade. It is a card that sits over whatever the
+   visitor happens to be looking at, and its text has to stay legible over all
+   of it — so the fill is far higher than the navigation's, and the blur
+   carries the glass read rather than the transparency. Anything less and the
+   page behind shows straight through the sentence. */
+.glass-elevated {
+  border: 1px solid rgb(255 255 255 / 0.74);
+  background: linear-gradient(
+    158deg,
+    rgb(255 255 255 / 0.97),
+    rgb(240 245 250 / 0.95)
+  );
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.96),
+    inset 0 0 0 1px rgb(2 31 63 / 0.07),
+    0 26px 56px -28px rgb(2 31 63 / 0.5),
+    0 6px 16px -10px rgb(2 31 63 / 0.24);
+}
+
 @supports not (
   (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
 ) {
@@ -335,6 +358,10 @@ body {
 
   .glass-card {
     background: rgb(252 253 254 / 0.97);
+  }
+
+  .glass-elevated {
+    background: rgb(251 252 254 / 0.99);
   }
 
   .glass-primary {
@@ -360,6 +387,12 @@ body {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
     background: rgb(252 253 254 / 0.98);
+  }
+
+  .glass-elevated {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgb(251 252 254 / 0.99);
   }
 
   .glass-surface {

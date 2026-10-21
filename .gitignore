@@ -48,6 +48,10 @@ yarn-error.log*
 .wrangler/
 .open-next/
 
+# The Cloudflare account details, the admin password and the rotation steps.
+# Local only — never commit it.
+CLOUDFLARE-CREDENTIALS.local.md
+
 # vercel
 .vercel
 

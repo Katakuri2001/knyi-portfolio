@@ -17,6 +17,7 @@ import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
  */
 
 const isPages = process.env.NEXT_TARGET === "pages";
+const isCloudflare = process.env.NEXT_TARGET === "cloudflare";
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 // In development, this wires the D1 and R2 bindings into `next dev`, so the
@@ -37,6 +38,17 @@ const nextConfig: NextConfig = {
   // better-sqlite3 is a native module — it must not be bundled.
   serverExternalPackages: ["better-sqlite3"],
 
+  // The image optimiser needs a server, and it needs one that will return
+  // the image *inline*. On Cloudflare the optimiser goes through the Workers
+  // Images binding, and for a locally-hosted source it comes back with
+  // `Content-Disposition: attachment` — so the browser downloads the file
+  // instead of drawing it, and the page shows a broken image.
+  //
+  // The originals are served instead. The site has three images, the largest
+  // of which is 157 KB, so there is nothing to gain from resizing them, and
+  // this is what the Pages export already does.
+  ...(isPages || isCloudflare ? { images: { unoptimized: true } } : {}),
+
   ...(isPages
     ? {
         output: "export" as const,
@@ -50,9 +62,6 @@ const nextConfig: NextConfig = {
           : {}),
         // GitHub Pages serves directory-style URLs.
         trailingSlash: true,
-        // The image optimiser needs a server. Static exports serve the
-        // original file instead.
-        images: { unoptimized: true },
       }
     : {}),
 };

@@ -1,6 +1,9 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "knyi-portfolio",
+  // Pinned, so no command can land in the wrong account by accident. There
+  // are three accounts on this login; only this one is in use.
+  "account_id": "e86299bf709f164c49c7743f56829687",
   "main": ".open-next/worker.js",
   "compatibility_date": "2025-04-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
@@ -19,13 +22,13 @@
     {
       "binding": "DB",
       "database_name": "knyi-portfolio",
-      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+      "database_id": "2618b69b-1217-4de3-a811-f9e1766aa171",
       "migrations_dir": "src/lib/db/migrations"
     },
     {
       "binding": "NEXT_TAG_CACHE_D1",
       "database_name": "knyi-cache",
-      "database_id": "REPLACE_WITH_YOUR_CACHE_DATABASE_ID",
+      "database_id": "a582a04d-0bdc-43b9-a791-98b88f25205b",
       "migrations_dir": "migrations/cache"
     }
   ],
@@ -46,6 +49,11 @@
   ],
 
   "vars": {
-    "NEXT_PUBLIC_SITE_URL": "https://knyimediabuyer.xyz"
+    // The address the site is actually served from. `knyimediabuyer.xyz` is
+    // registered at Namecheap and still points at a parking page, so pointing
+    // the canonical URL at it would tell a search engine that the real site
+    // lives there. When the domain moves to Cloudflare, change this to
+    // "https://knyimediabuyer.xyz" and rebuild — it is inlined at build time.
+    "NEXT_PUBLIC_SITE_URL": "https://knyi-portfolio.kaungsethmue2001.workers.dev"
   }
 }

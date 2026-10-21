@@ -276,6 +276,33 @@ git branch -D gh-pages   # or leave the branch, just stop deploying to it
 
 ---
 
+## 3a. Two things that will bite you
+
+**The build needs the wrangler `vars`.** `NEXT_PUBLIC_*` is inlined at build
+time, and the OpenNext build does not put the wrangler `vars` into the `next
+build` environment — it only ships them to the Worker at runtime. The public
+page is prerendered during the build, so without them the prerendered page
+has no canonical URL and the sitemap is empty. `scripts/build-cloudflare.mjs`
+reads the wrangler config and passes the `vars` through. **Use that script,
+not a bare `npx opennextjs-cloudflare build`.**
+
+**The cache population is skipped on purpose.** `opennextjs-cloudflare deploy`
+pre-loads the R2 incremental cache by starting a temporary local Worker and
+asking it to write the prerendered pages into the bucket. In wrangler 4.151
+the R2 binding is not wired into that temporary Worker, so every write comes
+back as `R2 binding "R2" is not configured` and the deploy aborts before the
+Worker is published.
+
+The population is an optimisation. The cache is written on demand at runtime,
+and that binding *is* configured. `scripts/deploy-cloudflare.mjs` therefore
+builds and then runs `wrangler deploy` with `OPEN_NEXT_DEPLOY=true` — the
+same publish, without the pre-load. If you ever want the pre-load, the
+adapter has a second path that uploads over S3 and needs an R2 API token:
+
+```bash
+npx opennextjs-cloudflare deploy --rclone
+```
+
 ## 4. The commands
 
 | Command | What it does |
@@ -285,7 +312,7 @@ git branch -D gh-pages   # or leave the branch, just stop deploying to it
 | `npm run start` | Runs the Node build. |
 | `npm run build:cloudflare` | The OpenNext bundle, in `.open-next/`. |
 | `npm run preview:cloudflare` | The Worker on `localhost:8787`, against a local D1 and R2. |
-| `npm run deploy:cloudflare` | Build and publish. |
+| `npm run deploy:cloudflare` | Build and publish. Skips the cache pre-load — see §3a. |
 | `npm run d1:migrate` | Apply the schema to the local D1. |
 | `npm run d1:migrate:remote` | Apply the schema to the remote D1. |
 | `npm run seed` | Seed the content store from `content/`. |

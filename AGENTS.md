@@ -85,6 +85,19 @@ it was built from. Check that line before assuming which content went live.
 ## Deployment
 There are two live surfaces, and they are independent.
 
+The Worker is live at `https://knyi-portfolio.kaungsethmue2001.workers.dev`,
+on Cloudflare account `e86299bf709f164c49c7743f56829687` (pinned in
+`wrangler.jsonc`).
+
+**Build and deploy through the scripts, not the raw CLI.** `npm run
+build:cloudflare` puts the wrangler `vars` into the build environment, which
+`NEXT_PUBLIC_*` needs because they are inlined at build time.
+`npm run deploy:cloudflare` publishes with `wrangler deploy` rather than
+`opennextjs-cloudflare deploy`, because the adapter's cache pre-load cannot
+wire the R2 binding in wrangler 4.151 and aborts the deploy. The cache is
+written on demand at runtime instead. Both are explained in
+`docs/STAGE-7-CLOUDFLARE-WORKERS.md` §3a.
+
 - **GitHub Pages** serves the **public page only**, at
   https://katakuri2001.github.io/knyi-portfolio/ — published from the
   `gh-pages` branch. The console and the API are not there, by design.

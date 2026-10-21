@@ -72,4 +72,116 @@ Object variant is the better long-term choice and is a one-line change in
 
 ## Run
 
-<!-- filled in as it happens -->
+### 1. The resources
+
+```
+npx wrangler d1 create knyi-portfolio    → 2618b69b-1217-4de3-a811-f9e1766aa171
+npx wrangler d1 create knyi-cache        → a582a04d-0bdc-43b9-a791-98b88f25205b
+npx wrangler r2 bucket create knyi-uploads
+npx wrangler r2 bucket create knyi-cache
+```
+
+The two database ids went into `wrangler.jsonc`, with `account_id` pinned
+alongside them.
+
+### 2. The migrations
+
+```
+npx wrangler d1 migrations apply DB --remote
+  001_init.sql          ✅
+  002_content_store.sql ✅
+npx wrangler d1 migrations apply NEXT_TAG_CACHE_D1 --remote
+  0001_revalidations.sql ✅
+```
+
+Fourteen tables in the application database, one in the tag cache.
+
+### 3. The secrets
+
+`ADMIN_PASSWORD` was set to a generated 24-character value, and the old
+default `knyi-admin-2026` was **never** set on the Worker. The value is
+recorded in `CLOUDFLARE-CREDENTIALS.local.md`, which is git-ignored, and in
+`~/.knyi-admin-password`.
+
+The third-party secrets are not set — there are no credentials for them yet,
+and the console reports each one as *needs configuration* rather than
+pretending.
+
+### 4. The deploy — and the two things that broke
+
+**The cache population failed.** `opennextjs-cloudflare deploy` populates the
+R2 incremental cache before it publishes, by starting a temporary local Worker
+and asking it to write the prerendered pages into the bucket. In this wrangler
+version the R2 binding is not wired into that temporary Worker, so every write
+came back as
+
+```
+R2 binding "R2" is not configured
+```
+
+and the deploy aborted **before the Worker was published**.
+
+The population is an optimisation — the cache is written on demand at runtime,
+and that binding *is* configured. `scripts/deploy-cloudflare.mjs` therefore
+builds and then runs `wrangler deploy` with `OPEN_NEXT_DEPLOY=true`, which is
+the same publish without the pre-load. The adapter's other path,
+`--rclone`, uploads over S3 instead and needs an R2 API token.
+
+**The site URL was not in the build.** `NEXT_PUBLIC_*` is inlined at build
+time, and the OpenNext build does not put the wrangler `vars` into the
+`next build` environment — it only ships them to the Worker at runtime. The
+public page is prerendered during the build, so the prerendered page had no
+canonical URL and the sitemap was empty. `scripts/build-cloudflare.mjs` now
+reads the wrangler config and passes its `vars` through, so the build and the
+runtime see the same values.
+
+### 5. Published
+
+```
+https://knyi-portfolio.kaungsethmue2001.workers.dev
+```
+
+### 6. Then the site came up wrong, and it was not Cloudflare's fault
+
+The privacy card was transparent — the hero showed straight through it — and
+on desktop the navigation rail painted over it.
+
+Both bugs were **already on the live GitHub Pages site**. The live Pages site
+was the control: it had the same transparent card and the same overlap. The
+Cloudflare deployment had simply made them more visible.
+
+- `glass-elevated`, the class the card uses, was **never defined** in
+  `globals.css`. The card had no surface at all.
+- The card was at `sm:left-5`, and the rail is `fixed left-6` at `z-50`
+  against the card's `z-40`.
+
+Both are fixed. The card is now a near-opaque surface at the bottom-right
+from `lg` up, and above the mobile dock below it. Measured, it overlaps
+neither the rail, the primary CTA nor the dock, and the worst contrast among
+its own text is 6.84:1.
+
+The Worker also returned broken images: the Workers image optimiser answered
+with `Content-Disposition: attachment`, so the browser downloaded the file
+instead of drawing it. The Cloudflare build now serves the originals, as the
+Pages export already did.
+
+### 7. Verified
+
+- The deployed Worker seeded the **remote** D1's content store on its first
+  request — proof that it is live and talking to the real database.
+- The full browser end-to-end pass is green against the Worker: consent →
+  tracking → contact form → stored lead → console → status update → SEO audit
+  → case-study write-through to the public page → CSV export →
+  unauthenticated rejection → mobile. Zero console errors.
+- TypeScript 0 errors, ESLint 0 errors and 0 warnings, 62 of 62 tests
+  passing.
+
+### 8. Not verified from this machine
+
+This machine's network **filters the `workers.dev` domain by SNI**. The same
+IP answers `developers.cloudflare.com` with 200 and `*.workers.dev` with a
+TLS reset, and the account's existing `futurebite` worker times out here too.
+So the deployed Worker was verified through the local Worker running the same
+bundle against a local D1, and through the remote D1's contents — not by
+loading the public URL from this box. A visitor on an unfiltered network is
+not affected.

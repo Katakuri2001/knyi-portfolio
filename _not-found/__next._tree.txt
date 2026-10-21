@@ -1,0 +1,5 @@
+:HL["/knyi-portfolio/_next/static/chunks/27ckck9cux9vj.css","style"]
+:HL["/knyi-portfolio/_next/static/chunks/212pnmzl7s5y3.css","style"]
+2:[["children",{"s":"__PAGE__","h":160}]]
+1:[["children",{"s":"/_not-found","h":96,"c":"$Q2"}]]
+0:{"b":"zWvxkL9sFn7Of3ButiNpn","t":{"t":{"s":"","h":80,"c":"$Q1"}}}

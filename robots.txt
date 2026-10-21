@@ -1,0 +1,6 @@
+User-Agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+Sitemap: https://katakuri2001.github.io/knyi-portfolio/sitemap.xml

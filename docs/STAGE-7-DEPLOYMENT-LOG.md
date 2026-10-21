@@ -176,7 +176,28 @@ Pages export already did.
 - TypeScript 0 errors, ESLint 0 errors and 0 warnings, 62 of 62 tests
   passing.
 
-### 8. Not verified from this machine
+### 8. The GitHub Pages site was refreshed too
+
+The privacy card bug was on the live Pages site as well, so the site was
+republished from this branch:
+
+```
+npm run deploy:pages
+  → gh-pages, commit 6836064
+  Source: feature/cloudflare-workers@8556717
+```
+
+`main` was not touched. The commit the script writes to `gh-pages` now
+records the branch and commit it was built from, so a deploy from a working
+branch and a deploy from `main` are distinguishable after the fact.
+
+Verified on the live site: the consent card has its surface, it overlaps
+neither the rail nor the CTA on desktop, the dock is clear on mobile, the
+images render, the sitemap has its absolute URLs, `robots.txt` still
+disallows `/admin` and `/api/`, and `/admin` is 404 on Pages — as it must
+be, because the console is not part of a static export.
+
+### 9. Not verified from this machine
 
 This machine's network **filters the `workers.dev` domain by SNI**. The same
 IP answers `developers.cloudflare.com` with 200 and `*.workers.dev` with a

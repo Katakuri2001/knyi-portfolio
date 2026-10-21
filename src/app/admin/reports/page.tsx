@@ -44,14 +44,16 @@ export default async function ReportsPage({
   );
   const range = resolveRange(flat);
 
-  const metrics = overviewMetrics(range);
-  const previous = overviewMetrics(range.previous);
-  const counts = leadCounts(range);
-  const channels = channelBreakdown(range);
-  const landings = landingPages(range, 8);
-  const caseStudies = caseStudyInterest(range);
-  const conversions = eventTypeBreakdown(range);
-  const experiments = listExperiments();
+  const metrics = await overviewMetrics(range);
+  const previous = await overviewMetrics(range.previous);
+  const counts = await leadCounts(range);
+  const channels = await channelBreakdown(range);
+  const landings = await landingPages(range, 8);
+  const caseStudies = await caseStudyInterest(range);
+  const conversions = await eventTypeBreakdown(range);
+  const experiments = await listExperiments();
+
+  const campaignRows = await leadsByCampaign(range);
 
   const exportQuery = new URLSearchParams({
     range: range.preset,
@@ -105,11 +107,11 @@ export default async function ReportsPage({
 
       <div className="mt-4 grid gap-4 xl:grid-cols-2">
         <Panel title="Traffic over time" description="Sessions per day">
-          <TrendChart data={sessionSeries(range)} label="Sessions per day" />
+          <TrendChart data={await sessionSeries(range)} label="Sessions per day" />
         </Panel>
 
         <Panel title="Enquiries over time" description="New enquiries per day">
-          <TrendChart data={leadSeries(range)} label="Enquiries per day" />
+          <TrendChart data={await leadSeries(range)} label="Enquiries per day" />
         </Panel>
 
         <Panel title="Acquisition" description="Sessions and enquiries by channel">
@@ -145,7 +147,7 @@ export default async function ReportsPage({
         </Panel>
 
         <Panel title="Campaign performance" description="Enquiries by campaign">
-          {leadsByCampaign(range).length === 0 ? (
+          {campaignRows.length === 0 ? (
             <EmptyState
               title="No attributed enquiries"
               body="Enquiries with a campaign in the URL appear here."
@@ -154,7 +156,7 @@ export default async function ReportsPage({
             <BarChart
               label="Enquiries by campaign"
               secondaryLabel="Qualified"
-              data={leadsByCampaign(range).map((row) => ({
+              data={campaignRows.map((row) => ({
                 label: row.campaign,
                 value: row.leads,
                 secondary: row.qualified,

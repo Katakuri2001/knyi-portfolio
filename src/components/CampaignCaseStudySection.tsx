@@ -293,8 +293,8 @@ function OffsetStudy({
   );
 }
 
-export function CampaignCaseStudySection() {
-  const studies = getCaseStudies();
+export async function CampaignCaseStudySection() {
+  const studies = await getCaseStudies();
   const [featured, ...supporting] = studies;
 
   if (!featured) {

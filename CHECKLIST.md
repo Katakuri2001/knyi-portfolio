@@ -213,10 +213,10 @@ npm run prune           # apply the 180-day retention policy (cron)
 
 ### 2.9 Storage — ✅
 
-- [x] SQLite at `./data/knyi.db` via `better-sqlite3`
-- [x] 14 tables, applied by repeatable migrations
+- [x] One storage port, two adapters: `better-sqlite3` on a Node host, D1 on Cloudflare Workers. The same queries run in both
+- [x] 15 tables, applied by repeatable migrations that run on either backend
 - [x] `import "server-only"` on every database module, so a client component cannot pull it into the browser
-- [x] Reviewed portfolio copy stays in `content/*.json`
+- [x] The reviewed portfolio copy is in the content store; `content/*.json` is the seed
 - [x] Indexes on every queried column
 - [x] Retention: events expire after 180 days
 
@@ -224,13 +224,27 @@ npm run prune           # apply the 180-day retention policy (cron)
 
 ## 3. Deployment
 
+### 3.1 GitHub Pages — the public portfolio
+
 - [x] Public portfolio live on GitHub Pages, published from the `gh-pages` branch
 - [x] `npm run deploy:pages` builds the export **in isolation** — it cannot overwrite the server build
 - [x] `/admin` and `/api/*` are excluded from the export, by design
-- [ ] ⚠️ **The console needs a server.** GitHub Pages cannot run it. Deploy the whole app to a Node host (`Dockerfile` and `docker-compose.yml` are ready) or to Cloudflare Workers
 - [ ] ⚠️ The automatic Pages deploy is blocked by a **billing lock on the GitHub account** — every workflow fails with "The job was not started because your account is locked due to a billing issue". Clear it, then switch Settings → Pages → Source to "GitHub Actions"
-- [ ] ⚠️ `NEXT_PUBLIC_SITE_URL` must be set **at build time** — `NEXT_PUBLIC_*` is inlined during the build, not read at runtime
 - [ ] ⚠️ A custom domain: set `NEXT_PUBLIC_BASE_PATH` to an empty string in the workflow and in `scripts/deploy-pages.mjs`
+
+### 3.2 Cloudflare Workers — the whole application
+
+- [x] The OpenNext Worker builds: `npm run build:cloudflare`
+- [x] The Worker runs locally against a local D1 and R2: `npx wrangler dev`
+- [x] The full end-to-end pass is green **on the Worker**: consent → tracking → contact form → stored lead → console → status update → SEO audit → case-study write-through to the public page → CSV export → unauthenticated rejection → mobile. Zero console errors
+- [x] D1 holds the schema, the leads, the events and the content store
+- [x] R2 holds the uploads; the public URL is unchanged
+- [x] `revalidatePath("/")` purges the R2 incremental cache and the D1 tag cache, so a console edit reaches the public page
+- [x] The origin check, the cookie's `Secure` flag and the SEO audit's target all read the **public** host, not the internal one
+- [ ] ⚠️ **The Cloudflare resources have to be created once**: two D1 databases, two R2 buckets, then the ids into `wrangler.jsonc`. `docs/STAGE-7-CLOUDFLARE-WORKERS.md` has the exact commands
+- [ ] ⚠️ The secrets have to be set with `wrangler secret put <NAME>` — they are not read from a `.env` file on Workers
+- [ ] ⚠️ `NEXT_PUBLIC_SITE_URL` must be set in the `vars` block **and rebuilt** — `NEXT_PUBLIC_*` is inlined during the build, not read at runtime
+- [ ] ⚠️ The domain: two CNAME records to the Worker, then a rebuild
 
 ---
 
@@ -240,9 +254,10 @@ npm run prune           # apply the 180-day retention policy (cron)
 - [ ] No cost per lead or ROAS. No advertising spend data is connected, so they would be fabricated
 - [ ] No visitor identity. A pseudonymous id, never a person
 - [ ] The static export cannot apply SEO metadata overrides — there is no database on Pages
-- [ ] Uploads need a writable filesystem. Not available on read-only serverless hosting
+- [ ] Uploads need a writable filesystem on a Node host. On Workers they go to R2 instead
 - [ ] The first-party tracker is not a GA4 replacement. It is a cross-check, and the two are reported separately
 - [ ] The SEO audit checks the instance that is running, not the live site, unless `SITE_INTERNAL_URL` is set
+- [ ] The static export is built from a checkout, so it carries the **seed** content. Console edits reach it only through Settings → Content export
 
 ---
 
@@ -250,12 +265,12 @@ npm run prune           # apply the 180-day retention policy (cron)
 
 1. Set `ADMIN_PASSWORD` — production refuses to start without it
 2. Set `NEXT_PUBLIC_SITE_URL` at build time
-3. Replace the placeholder contact details — **Console → Settings**, or `content/profile.json`
+3. Replace the placeholder contact details — **Console → Settings**, then export the content to keep the repository in step
 4. Add `GOOGLE_SERVICE_ACCOUNT_JSON` to unlock GA4 reporting and Search Console
 5. Add `NEXT_PUBLIC_GA_MEASURE_ID` to unlock GA4 collection
 6. Add `NEXT_PUBLIC_META_PIXEL_ID` to unlock remarketing audiences
 7. Verify the Search Console property
-8. Deploy the app to a Node host, or move it to Cloudflare Workers
+8. Create the Cloudflare resources and deploy the Worker — `docs/STAGE-7-CLOUDFLARE-WORKERS.md` has the commands, in order
 9. Clear the GitHub billing lock to re-enable the automatic Pages deploy
 10. Decide where the full SEO lockup goes, and reconcile "SEO & Marketing" with the site's "performance marketer" positioning
 

@@ -11,12 +11,10 @@
  *     0 3 * * *  cd /srv/knyi && npm run prune
  */
 import { pruneEvents } from "../src/lib/db/events.ts";
-import { closeDb } from "../src/lib/db/index.ts";
+import { closeDb } from "../src/lib/db/adapter.ts";
 
 const RETENTION_DAYS = Number(process.env.ANALYTICS_RETENTION_DAYS ?? 180);
 
-const removed = pruneEvents(RETENTION_DAYS);
-console.log(
-  `Removed ${removed} record(s) older than ${RETENTION_DAYS} days.`
-);
+const removed = await pruneEvents(RETENTION_DAYS);
+console.log(`Removed ${removed} record(s) older than ${RETENTION_DAYS} days.`);
 closeDb();

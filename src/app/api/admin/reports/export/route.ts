@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
   let filename: string;
 
   if (format === "leads") {
-    const leads = exportLeads(range);
+    const leads = await exportLeads(range);
     const headers = [
       "id",
       "created_at",
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
     filename = "leads";
   } else if (format === "events") {
     const { recentEvents } = await import("@/lib/db/events");
-    const events = recentEvents(5000);
+    const events = await recentEvents(5000);
     csv = toCsv(
       ["occurred_at", "name", "path", "channel", "conversion", "device"],
       events.map((event) => [

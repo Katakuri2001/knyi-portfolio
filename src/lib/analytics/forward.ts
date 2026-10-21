@@ -38,7 +38,7 @@ export async function forwardLeadConversion(
   // Advertising storage requires marketing consent. A lead submission is not
   // consent, so the visitor's recorded state decides.
   if (conversion.visitorId) {
-    const visitor = getVisitor(conversion.visitorId);
+    const visitor = await getVisitor(conversion.visitorId);
     if (visitor && visitor.consent !== "marketing") return;
   }
 

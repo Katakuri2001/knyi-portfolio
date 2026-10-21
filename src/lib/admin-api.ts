@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { ADMIN_COOKIE, sessionToken } from "@/lib/auth";
+import { ADMIN_COOKIE, isSameOrigin, sessionToken } from "@/lib/auth";
 
 /**
  * Shared guards for the console's API routes.
@@ -20,15 +20,7 @@ export function isAdminRequest(request: NextRequest): boolean {
   return token === sessionToken();
 }
 
-export function isSameOrigin(request: NextRequest): boolean {
-  const origin = request.headers.get("origin");
-  if (!origin) return true;
-  try {
-    return new URL(origin).host === request.nextUrl.host;
-  } catch {
-    return false;
-  }
-}
+export { isSameOrigin };
 
 export function unauthorized(): NextResponse {
   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

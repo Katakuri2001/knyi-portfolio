@@ -12,8 +12,8 @@ import { getProfile } from "@/lib/content";
  * profile.json, so it cannot drift from the data.
  */
 
-export function AboutSection() {
-  const profile = getProfile();
+export async function AboutSection() {
+  const profile = await getProfile();
 
   return (
     <section id="about" className="relative">

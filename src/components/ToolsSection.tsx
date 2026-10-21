@@ -58,9 +58,9 @@ function ToolRows({
   );
 }
 
-export function ToolsSection() {
-  const services = getServices();
-  const tools = getTools();
+export async function ToolsSection() {
+  const services = await getServices();
+  const tools = await getTools();
 
   return (
     <section id="tools" className="band-sunken relative">

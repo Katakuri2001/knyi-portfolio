@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     );
     const browser = classifyBrowser(request.headers.get("user-agent") ?? undefined);
 
-    recordEvents(
+    await recordEvents(
       [
         {
           name: "lead_created",
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    observeCampaign(utm, 0, 1);
+    await observeCampaign(utm, 0, 1);
   }
 
   // Forward the conversion to any configured advertising platforms. A failure

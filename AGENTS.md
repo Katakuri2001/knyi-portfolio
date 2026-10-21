@@ -29,42 +29,80 @@ Premium personal portfolio website for Khant Nyi Nyi (K-Nyi), performance market
 - `npm run lint` — ESLint type-check
 - `npx tsc --noEmit` — TypeScript check
 - `npm test` — the test suite (Node's built-in runner, no test framework)
-- `npm run migrate` — apply the database migrations
+- `npm run migrate` — apply the database migrations (local SQLite)
+- `npm run seed` — seed the content store from `content/`
 - `npm run prune` — apply the analytics retention policy (run from cron)
 - `npm run build:pages` — static export for GitHub Pages into ./out
 - `npm run deploy:pages` — build the export and publish it to the gh-pages branch
+- `npm run build:cloudflare` — the OpenNext Worker bundle, into .open-next
+- `npm run preview:cloudflare` — the Worker locally, against a local D1 and R2
+- `npm run deploy:cloudflare` — build and publish the Worker
+- `npm run d1:migrate` / `npm run d1:migrate:remote` — apply the schema to D1
 
 ## Database
-SQLite, at `./data/knyi.db`, through `better-sqlite3`. It holds the **generated
-and transactional** data: leads, lead notes, analytics events, sessions, campaign
-observations, SEO audit runs and issues, SEO metadata overrides, experiments, and
-integration state.
+SQLite, through a **storage port** (`src/lib/db/adapter.ts`) with two
+adapters: `better-sqlite3` on a disk for Node, and D1 over HTTP for Cloudflare
+Workers. Every query is written against the port and runs unchanged in both
+places, so the console has one code path.
 
-The **reviewed portfolio content** stays in `content/*.json` — profile, services,
-tools, education, case studies. That content is versioned in git and read at
-render time; it is not a write-heavy workload and does not need a database.
+It holds the **generated and transactional** data: leads, lead notes,
+analytics events, sessions, campaign observations, SEO audit runs and issues,
+SEO metadata overrides, experiments, and integration state.
+
+The **reviewed portfolio content** — profile, services, tools, education, case
+studies — is in the `content_documents` table, one JSON document per kind.
+The files in `content/` are the **seed**: they are bundled with the code and
+used whenever the store has no row for a kind, so a fresh deployment renders
+correctly before anything is seeded. `npm run seed` writes the seed into an
+empty store and never overwrites what is there.
+
+Two consequences to keep in mind:
+- The console edits the **store**, not the files. Settings → Content export
+  downloads the live content so the repository can be kept in step.
+- The GitHub Pages export is built from a checkout, so it carries the seed.
+  Console edits on Workers reach it only through that export.
 
 Every module under `src/lib/db/` carries `import "server-only"`, so a client
 component cannot pull the database into the browser bundle. Types live in
-`src/lib/db/types.ts`, which is safe to import from either side.
+`src/lib/db/types.ts` and `src/lib/db/content-types.ts`, which are safe to
+import from either side.
+
+Queries use **positional** `?` parameters, never named ones: `better-sqlite3`
+spells named parameters `@name` and D1 spells them `:name`, and only
+positional works in both.
 
 ## Deployment
-- The **public page** is live at https://katakuri2001.github.io/knyi-portfolio/ —
-  published from the `gh-pages` branch.
-- The **console, the contact form and event ingestion need a server** and are not
-  on GitHub Pages. A `Dockerfile` and `docker-compose.yml` are provided for a Node
-  host; the database lives on a mounted volume at `/app/data`.
-- `.github/workflows/deploy-pages.yml` is the automatic route, but it is blocked
-  by a **billing lock on the GitHub account** — every workflow fails with "The job
-  was not started because your account is locked due to a billing issue". Once
-  billing is cleared, switch Settings → Pages → Source to "GitHub Actions".
-- See `docs/STAGE-4-GITHUB-PAGES.md` and `docs/STAGE-6-MARKETING-INTELLIGENCE.md`.
+There are two live surfaces, and they are independent.
+
+- **GitHub Pages** serves the **public page only**, at
+  https://katakuri2001.github.io/knyi-portfolio/ — published from the
+  `gh-pages` branch. The console and the API are not there, by design.
+- **Cloudflare Workers** serves the **whole application** — the public page,
+  the console, the contact form and the analytics — with D1 for the database
+  and R2 for uploads. This is the recommended home for everything.
+
+A `Dockerfile` and `docker-compose.yml` are also provided for a Node host; the
+database lives on a mounted volume at `/app/data`.
+
+`.github/workflows/deploy-pages.yml` is the automatic route for Pages, but it
+is blocked by a **billing lock on the GitHub account** — every workflow fails
+with "The job was not started because your account is locked due to a billing
+issue". Once billing is cleared, switch Settings → Pages → Source to "GitHub
+Actions".
+
+See `docs/STAGE-4-GITHUB-PAGES.md`, `docs/STAGE-6-MARKETING-INTELLIGENCE.md`
+and `docs/STAGE-7-CLOUDFLARE-WORKERS.md`.
 
 ## Authentication
 - Admin console: `/admin` — sign in with `ADMIN_PASSWORD` from the environment
 - Session: HttpOnly cookie `admin_session`, an HMAC keyed by the password, 7-day expiry
 - Production **refuses to start** without `ADMIN_PASSWORD` set
 - Sign out: GET `/api/auth/signout` (or DELETE `/api/auth`)
+- The **origin check** on writes compares the browser's `Origin` header against
+  the host the visitor addressed, which on Cloudflare Workers comes from
+  `x-forwarded-host` — **not** `request.nextUrl.host`, which names the
+  internal origin the request was forwarded to. `src/lib/request-origin.ts` is
+  the only place that knows this.
 
 ## Admin Console
 `/admin` — a marketing intelligence console with eleven sections: Overview,
@@ -93,13 +131,23 @@ Reports, and Settings.
   `revalidatePath("/")` does not regenerate the static route
 
 ## Content Management
-All portfolio content managed via JSON files in `content/` directory:
-- `case-studies.json` — case studies with reported/verified flags
-- `services.json` — 3 capability groups (Meta Ads, Content Strategy, Marketing Analysis)
-- `profile.json` — Name, tagline, background, positioning, contact details
-- `education.json` — Completed + currently studying
-- `tools.json` — Practical exposure + currently learning
-- `contact-leads.json` — Form submissions with status tracking
+The portfolio content is read from and written to the **content store** in the
+database, one JSON document per kind:
+- `case-studies` — case studies with reported/verified flags
+- `services` — 3 capability groups (Meta Ads, Content Strategy, Marketing Analysis)
+- `profile` — Name, tagline, background, positioning, contact details
+- `education` — Completed + currently studying
+- `tools` — Practical exposure + currently learning
+
+The files in `content/` are the **seed** for those documents. They are bundled
+with the code and used whenever the store has no row for a kind. `npm run seed`
+writes the seed into an empty store; it never overwrites what is there.
+Settings → Content export downloads the live content, so the repository can be
+kept in step with the site.
+
+Leads are **not** content. They live in their own table with a status pipeline
+— new, contacted, qualified, proposal sent, won, lost, archived — and are
+never written to a file.
 
 ## Verification Status
 - ✅ TypeScript: 0 errors

@@ -11,9 +11,9 @@ import {
  * The experiment log.
  *
  * There is no automated split-testing engine, and this table is not one. It
- * records the owner's own hypothesis, the change, the metric they are
- * watching, and what they observed. The console never computes a winner from
- * it, because with no control group there is nothing to compare against.
+ * records the owner's own hypothesis, the change, the metric being watched, and
+ * what was observed. The console never computes a winner from it: with no
+ * control group there is nothing to compare against.
  */
 
 export { EXPERIMENT_STATUSES };
@@ -40,31 +40,28 @@ export type ExperimentInput = {
   nextAction?: string | null;
 };
 
-export function listExperiments(): ExperimentRow[] {
-  const db = getDb();
-  return db
-    .prepare(
-      `SELECT * FROM experiments
-        ORDER BY CASE status WHEN 'running' THEN 0 WHEN 'planned' THEN 1 ELSE 2 END,
-                 COALESCE(started_at, created_at) DESC`
-    )
-    .all() as ExperimentRow[];
-}
-
-export function getExperiment(id: string): ExperimentRow | null {
-  const db = getDb();
-  return (
-    (db.prepare("SELECT * FROM experiments WHERE id = ?").get(id) as
-      | ExperimentRow
-      | undefined) ?? null
+export async function listExperiments(): Promise<ExperimentRow[]> {
+  const db = await getDb();
+  return db.all<ExperimentRow>(
+    `SELECT * FROM experiments
+      ORDER BY CASE status WHEN 'running' THEN 0 WHEN 'planned' THEN 1 ELSE 2 END,
+               COALESCE(started_at, created_at) DESC`
   );
 }
 
-export function createExperiment(
+export async function getExperiment(id: string): Promise<ExperimentRow | null> {
+  const db = await getDb();
+  return db.first<ExperimentRow>(
+    "SELECT * FROM experiments WHERE id = ?",
+    [id]
+  );
+}
+
+export async function createExperiment(
   id: string,
   input: ExperimentInput
-): ExperimentRow {
-  const db = getDb();
+): Promise<ExperimentRow> {
+  const db = await getDb();
   const timestamp = now();
 
   const row: ExperimentRow = {
@@ -84,27 +81,29 @@ export function createExperiment(
     updated_at: timestamp,
   };
 
-  db.prepare(
+  await db.run(
     `INSERT INTO experiments (
        id, hypothesis, target, change, primary_metric, secondary_metric,
        status, started_at, ended_at, result, conclusion, next_action,
        created_at, updated_at
-     ) VALUES (
-       @id, @hypothesis, @target, @change, @primary_metric, @secondary_metric,
-       @status, @started_at, @ended_at, @result, @conclusion, @next_action,
-       @created_at, @updated_at
-     )`
-  ).run(row);
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      row.id, row.hypothesis, row.target, row.change, row.primary_metric,
+      row.secondary_metric, row.status, row.started_at, row.ended_at,
+      row.result, row.conclusion, row.next_action, row.created_at,
+      row.updated_at,
+    ]
+  );
 
   return row;
 }
 
-export function updateExperiment(
+export async function updateExperiment(
   id: string,
   input: Partial<ExperimentInput>
-): ExperimentRow | null {
-  const db = getDb();
-  const current = getExperiment(id);
+): Promise<ExperimentRow | null> {
+  const db = await getDb();
+  const current = await getExperiment(id);
   if (!current) return null;
 
   const next: ExperimentRow = {
@@ -123,20 +122,25 @@ export function updateExperiment(
     updated_at: now(),
   };
 
-  db.prepare(
+  await db.run(
     `UPDATE experiments SET
-       hypothesis = @hypothesis, target = @target, change = @change,
-       primary_metric = @primary_metric, secondary_metric = @secondary_metric,
-       status = @status, started_at = @started_at, ended_at = @ended_at,
-       result = @result, conclusion = @conclusion, next_action = @next_action,
-       updated_at = @updated_at
-     WHERE id = @id`
-  ).run(next);
+       hypothesis = ?, target = ?, change = ?,
+       primary_metric = ?, secondary_metric = ?, status = ?,
+       started_at = ?, ended_at = ?, result = ?, conclusion = ?,
+       next_action = ?, updated_at = ?
+     WHERE id = ?`,
+    [
+      next.hypothesis, next.target, next.change, next.primary_metric,
+      next.secondary_metric, next.status, next.started_at, next.ended_at,
+      next.result, next.conclusion, next.next_action, next.updated_at, next.id,
+    ]
+  );
 
   return next;
 }
 
-export function deleteExperiment(id: string): boolean {
-  const db = getDb();
-  return db.prepare("DELETE FROM experiments WHERE id = ?").run(id).changes > 0;
+export async function deleteExperiment(id: string): Promise<boolean> {
+  const db = await getDb();
+  const result = await db.run("DELETE FROM experiments WHERE id = ?", [id]);
+  return result.changes > 0;
 }

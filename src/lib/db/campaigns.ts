@@ -9,7 +9,7 @@ import type { CampaignRow } from "./types.ts";
  * Two different things, deliberately kept apart:
  *
  * - `campaigns` is the owner's **own record** of a campaign — its name,
- *   objective, channel and dates. It carries no metrics.
+ *   channel, objective and dates. It carries no metrics.
  * - `campaign_observations` is **observed** data — the UTM combinations that
  *   actually arrived on the site, with session and lead counts.
  *
@@ -27,23 +27,25 @@ export type CampaignInput = {
   notes?: string | null;
 };
 
-export function listCampaigns(): CampaignRow[] {
-  const db = getDb();
-  return db
-    .prepare("SELECT * FROM campaigns ORDER BY COALESCE(starts_at, created_at) DESC")
-    .all() as CampaignRow[];
-}
-
-export function getCampaign(id: string): CampaignRow | null {
-  const db = getDb();
-  return (
-    (db.prepare("SELECT * FROM campaigns WHERE id = ?").get(id) as CampaignRow) ?? null
+export async function listCampaigns(): Promise<CampaignRow[]> {
+  const db = await getDb();
+  return db.all<CampaignRow>(
+    "SELECT * FROM campaigns ORDER BY COALESCE(starts_at, created_at) DESC"
   );
 }
 
-export function createCampaign(id: string, input: CampaignInput): CampaignRow {
-  const db = getDb();
+export async function getCampaign(id: string): Promise<CampaignRow | null> {
+  const db = await getDb();
+  return db.first<CampaignRow>("SELECT * FROM campaigns WHERE id = ?", [id]);
+}
+
+export async function createCampaign(
+  id: string,
+  input: CampaignInput
+): Promise<CampaignRow> {
+  const db = await getDb();
   const timestamp = now();
+
   const row: CampaignRow = {
     id,
     name: input.name,
@@ -57,25 +59,26 @@ export function createCampaign(id: string, input: CampaignInput): CampaignRow {
     updated_at: timestamp,
   };
 
-  db.prepare(
+  await db.run(
     `INSERT INTO campaigns (
        id, name, channel, objective, service, starts_at, ends_at, notes,
        created_at, updated_at
-     ) VALUES (
-       @id, @name, @channel, @objective, @service, @starts_at, @ends_at, @notes,
-       @created_at, @updated_at
-     )`
-  ).run(row);
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      row.id, row.name, row.channel, row.objective, row.service,
+      row.starts_at, row.ends_at, row.notes, row.created_at, row.updated_at,
+    ]
+  );
 
   return row;
 }
 
-export function updateCampaign(
+export async function updateCampaign(
   id: string,
   input: Partial<CampaignInput>
-): CampaignRow | null {
-  const db = getDb();
-  const current = getCampaign(id);
+): Promise<CampaignRow | null> {
+  const db = await getDb();
+  const current = await getCampaign(id);
   if (!current) return null;
 
   const next: CampaignRow = {
@@ -90,20 +93,24 @@ export function updateCampaign(
     updated_at: now(),
   };
 
-  db.prepare(
+  await db.run(
     `UPDATE campaigns SET
-       name = @name, channel = @channel, objective = @objective,
-       service = @service, starts_at = @starts_at, ends_at = @ends_at,
-       notes = @notes, updated_at = @updated_at
-     WHERE id = @id`
-  ).run(next);
+       name = ?, channel = ?, objective = ?, service = ?,
+       starts_at = ?, ends_at = ?, notes = ?, updated_at = ?
+     WHERE id = ?`,
+    [
+      next.name, next.channel, next.objective, next.service,
+      next.starts_at, next.ends_at, next.notes, next.updated_at, next.id,
+    ]
+  );
 
   return next;
 }
 
-export function deleteCampaign(id: string): boolean {
-  const db = getDb();
-  return db.prepare("DELETE FROM campaigns WHERE id = ?").run(id).changes > 0;
+export async function deleteCampaign(id: string): Promise<boolean> {
+  const db = await getDb();
+  const result = await db.run("DELETE FROM campaigns WHERE id = ?", [id]);
+  return result.changes > 0;
 }
 
 export type CampaignObservation = {
@@ -124,17 +131,23 @@ export type CampaignObservation = {
  * `sessions` counts distinct sessions that entered with this UTM set; `leads`
  * counts leads whose attribution matched it.
  */
-export function observeCampaign(
-  utm: { source: string | null; medium: string | null; campaign: string | null; content: string | null; term: string | null },
+export async function observeCampaign(
+  utm: {
+    source: string | null;
+    medium: string | null;
+    campaign: string | null;
+    content: string | null;
+    term: string | null;
+  },
   sessionCount: number,
   leadCount: number
-): void {
+): Promise<void> {
   if (!utm.source) return;
 
-  const db = getDb();
+  const db = await getDb();
   const timestamp = now();
 
-  db.prepare(
+  await db.run(
     `INSERT INTO campaign_observations (
        source, medium, campaign, content, term, first_seen, last_seen, sessions, leads
      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -143,26 +156,17 @@ export function observeCampaign(
        term = COALESCE(excluded.term, campaign_observations.term),
        last_seen = excluded.last_seen,
        sessions = campaign_observations.sessions + excluded.sessions,
-       leads = campaign_observations.leads + excluded.leads`
-  ).run(
-    utm.source,
-    utm.medium,
-    utm.campaign,
-    utm.content,
-    utm.term,
-    timestamp,
-    timestamp,
-    sessionCount,
-    leadCount
+       leads = campaign_observations.leads + excluded.leads`,
+    [
+      utm.source, utm.medium, utm.campaign, utm.content, utm.term,
+      timestamp, timestamp, sessionCount, leadCount,
+    ]
   );
 }
 
-export function listObservations(): CampaignObservation[] {
-  const db = getDb();
-  return db
-    .prepare(
-      `SELECT * FROM campaign_observations
-        ORDER BY sessions DESC, last_seen DESC`
-    )
-    .all() as CampaignObservation[];
+export async function listObservations(): Promise<CampaignObservation[]> {
+  const db = await getDb();
+  return db.all<CampaignObservation>(
+    "SELECT * FROM campaign_observations ORDER BY sessions DESC, last_seen DESC"
+  );
 }

@@ -147,7 +147,11 @@ export function AdminSignIn({ configured }: { configured: boolean }) {
         </form>
       )}
 
-      <Link href="/" className="glass-surface mt-12 self-start px-4 py-2">
+      <Link
+        href="/"
+        prefetch={false}
+        className="glass-surface mt-12 self-start px-4 py-2"
+      >
         Back to the public site
       </Link>
     </main>

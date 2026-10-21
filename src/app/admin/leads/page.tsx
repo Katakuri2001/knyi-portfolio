@@ -34,9 +34,9 @@ export default async function LeadsPage({
   );
   const range = resolveRange(flat);
 
-  const counts = leadCounts(range);
-  const metrics = overviewMetrics(range);
-  const byCampaign = leadsByCampaign(range);
+  const counts = await leadCounts(range);
+  const metrics = await overviewMetrics(range);
+  const byCampaign = await leadsByCampaign(range);
 
   const total = Object.values(counts).reduce((sum, value) => sum + value, 0);
 

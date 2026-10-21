@@ -26,9 +26,10 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function SeoPage() {
-  const run = latestAuditRun();
-  const issues = run ? auditIssues(run.id) : [];
-  const overrides = listSeoMetadata();
+  const run = await latestAuditRun();
+  const runCount = (await listAuditRuns(1)).length;
+  const issues = run ? await auditIssues(run.id) : [];
+  const overrides = await listSeoMetadata();
 
   /* --- Search Console --- */
   let searchData: {
@@ -193,7 +194,7 @@ export default async function SeoPage() {
                 ? ` · failed: ${run.error}`
                 : ""}
               {" · "}
-              {listAuditRuns(1).length} run(s) recorded
+              {runCount} run(s) recorded
             </p>
           </>
         )}

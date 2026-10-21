@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Figure, SectionMarker } from "@/components/editorial";
 import { Reveal } from "@/components/Reveal";
 import { getProfile } from "@/lib/content";
@@ -31,8 +30,8 @@ const PROCESS_LINE = [
   "Optimize",
 ];
 
-export function HeroSection() {
-  const profile = getProfile();
+export async function HeroSection() {
+  const profile = await getProfile();
 
   return (
     <section id="top" className="relative">
@@ -91,7 +90,7 @@ export function HeroSection() {
 
             <Reveal delay={0.2}>
               <div className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-3">
-                <Link href="#contact" className="cta-primary">
+                <a href="#contact" className="cta-primary">
                   Start a project
                   <svg
                     aria-hidden="true"
@@ -105,10 +104,10 @@ export function HeroSection() {
                   >
                     <path d="M2 8h12M9 3l5 5-5 5" />
                   </svg>
-                </Link>
-                <Link href="#campaigns" className="cta-secondary">
+                </a>
+                <a href="#campaigns" className="cta-secondary">
                   See selected campaigns
-                </Link>
+                </a>
               </div>
             </Reveal>
           </div>

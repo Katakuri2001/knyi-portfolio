@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import {
   useCallback,
   useEffect,
@@ -158,7 +157,7 @@ function NavLinks({
         const isActive = active === link.href;
         return (
           <li key={link.href}>
-            <Link
+            <a
               href={link.href}
               onClick={onNavigate}
               aria-current={isActive ? "location" : undefined}
@@ -195,7 +194,7 @@ function NavLinks({
                   {link.label}
                 </span>
               </span>
-            </Link>
+            </a>
           </li>
         );
       })}
@@ -276,7 +275,7 @@ export function SiteNavigation() {
           className="glass-rail rail pointer-events-auto relative flex max-h-[calc(100dvh-1.5rem)] flex-col overflow-y-auto p-2"
           data-collapsed={collapsed}
         >
-          <Link
+          <a
             href="#top"
             aria-label="K-Nyi — back to top"
             className="flex items-center gap-2.5 rounded-xl px-2.5 py-2.5 transition-colors duration-200 hover:bg-white/55"
@@ -297,7 +296,7 @@ export function SiteNavigation() {
                 Performance marketer
               </span>
             </span>
-          </Link>
+          </a>
 
           <div className="mx-2.5 h-px bg-black/10" aria-hidden="true" />
 
@@ -374,7 +373,7 @@ export function SiteNavigation() {
             {dockLinks.map((link) => {
               const isActive = active === link.href;
               return (
-                <Link
+                <a
                   key={link.href}
                   href={link.href}
                   onClick={() => setOpen(false)}
@@ -406,7 +405,7 @@ export function SiteNavigation() {
                       }}
                     />
                   </span>
-                </Link>
+                </a>
               );
             })}
             <button

@@ -1,5 +1,3 @@
-import "server-only";
-
 import { getDb, now } from "./index.ts";
 import type {
   Channel,
@@ -38,27 +36,27 @@ export type IncomingEvent = {
 };
 
 /** Records a batch of validated events. Returns how many were stored. */
-export function recordEvents(
+export async function recordEvents(
   events: IncomingEvent[],
   context: VisitorContext
-): number {
+): Promise<number> {
   if (events.length === 0) return 0;
 
-  const db = getDb();
+  const db = await getDb();
   const timestamp = now();
   const utmJson = JSON.stringify(context.utm);
 
-  const upsertVisitor = db.prepare(`
-    INSERT INTO visitors (
+  await db.run(
+    `INSERT INTO visitors (
       id, first_seen_at, last_seen_at, consent, referrer_host,
       device_category, browser_category, country,
       first_utm, first_referrer, first_path,
       last_utm, last_referrer, last_path
     ) VALUES (
-      @id, @ts, @ts, 'essential', @referrer,
-      @device, @browser, @country,
-      @utm, @referrer, @path,
-      @utm, @referrer, @path
+      ?, ?, ?, 'essential', ?,
+      ?, ?, ?,
+      ?, ?, ?,
+      ?, ?, ?
     )
     ON CONFLICT (id) DO UPDATE SET
       last_seen_at = excluded.last_seen_at,
@@ -67,93 +65,92 @@ export function recordEvents(
       country = COALESCE(excluded.country, visitors.country),
       last_utm = excluded.last_utm,
       last_referrer = excluded.last_referrer,
-      last_path = excluded.last_path
-  `);
+      last_path = excluded.last_path`,
+    [
+      context.visitorId, timestamp, timestamp, context.referrerHost,
+      context.deviceCategory, context.browserCategory, context.country,
+      utmJson, context.referrerHost, context.path,
+      utmJson, context.referrerHost, context.path,
+    ]
+  );
 
-  const upsertSession = db.prepare(`
-    INSERT INTO sessions (
+  await db.run(
+    `INSERT INTO sessions (
       id, visitor_id, started_at, last_active_at, entry_path,
       referrer_host, utm, channel, device_category, browser_category, country
     ) VALUES (
-      @id, @visitor, @ts, @ts, @path,
-      @referrer, @utm, @channel, @device, @browser, @country
+      ?, ?, ?, ?, ?,
+      ?, ?, ?, ?, ?, ?
     )
     ON CONFLICT (id) DO UPDATE SET
-      last_active_at = excluded.last_active_at
-  `);
+      last_active_at = excluded.last_active_at`,
+    [
+      context.sessionId, context.visitorId, timestamp, timestamp, context.path,
+      context.referrerHost, utmJson, context.channel, context.deviceCategory,
+      context.browserCategory, context.country,
+    ]
+  );
 
-  const insertEvent = db.prepare(`
-    INSERT INTO analytics_events (
-      name, visitor_id, session_id, occurred_at, path, referrer_host,
-      channel, utm, device_category, browser_category, country,
-      props, conversion, dedupe_key
-    ) VALUES (
-      @name, @visitor, @session, @occurred, @path, @referrer,
-      @channel, @utm, @device, @browser, @country,
-      @props, @conversion, @dedupe
-    )
-    ON CONFLICT (dedupe_key) DO NOTHING
-  `);
+  // One batch, so the whole set lands together and a duplicate key is ignored
+  // by the unique index rather than by a read-then-write check.
+  const statements = events.map((event) => ({
+    sql: `INSERT INTO analytics_events (
+        name, visitor_id, session_id, occurred_at, path, referrer_host,
+        channel, utm, device_category, browser_category, country,
+        props, conversion, dedupe_key
+      ) VALUES (
+        ?, ?, ?, ?, ?, ?,
+        ?, ?, ?, ?, ?,
+        ?, ?, ?
+      )
+      ON CONFLICT (dedupe_key) DO NOTHING`,
+    params: [
+      event.name,
+      context.visitorId,
+      context.sessionId,
+      event.occurredAt ?? timestamp,
+      context.path,
+      context.referrerHost,
+      context.channel,
+      utmJson,
+      context.deviceCategory,
+      context.browserCategory,
+      context.country,
+      JSON.stringify(event.props ?? {}),
+      event.conversion ?? null,
+      event.dedupeKey ?? null,
+    ],
+  }));
 
-  const markConverted = db.prepare(`
-    UPDATE sessions SET is_converted = 1, converted_at = @ts WHERE id = @id
-  `);
+  // A batch cannot report per-statement change counts, so the number of
+  // events that were *actually* stored is measured rather than assumed: the
+  // duplicates that were already there are counted first.
+  const keys = events
+    .map((event) => event.dedupeKey)
+    .filter((key): key is string => Boolean(key));
 
-  const write = db.transaction(() => {
-    let stored = 0;
+  let alreadyStored = 0;
+  if (keys.length > 0) {
+    const placeholders = keys.map(() => "?").join(",");
+    const existing = await db.all<{ dedupe_key: string }>(
+      `SELECT dedupe_key FROM analytics_events
+        WHERE dedupe_key IN (${placeholders})`,
+      keys
+    );
+    alreadyStored = existing.length;
+  }
 
-    upsertVisitor.run({
-      id: context.visitorId,
-      ts: timestamp,
-      referrer: context.referrerHost,
-      device: context.deviceCategory,
-      browser: context.browserCategory,
-      country: context.country,
-      utm: utmJson,
-      path: context.path,
-    });
+  await db.batch(statements);
 
-    upsertSession.run({
-      id: context.sessionId,
-      visitor: context.visitorId,
-      ts: timestamp,
-      path: context.path,
-      referrer: context.referrerHost,
-      utm: utmJson,
-      channel: context.channel,
-      device: context.deviceCategory,
-      browser: context.browserCategory,
-      country: context.country,
-    });
+  const conversions = events.filter((event) => event.conversion);
+  if (conversions.length > 0) {
+    await db.run(
+      `UPDATE sessions SET is_converted = 1, converted_at = ? WHERE id = ?`,
+      [timestamp, context.sessionId]
+    );
+  }
 
-    for (const event of events) {
-      const result = insertEvent.run({
-        name: event.name,
-        visitor: context.visitorId,
-        session: context.sessionId,
-        occurred: event.occurredAt ?? timestamp,
-        path: context.path,
-        referrer: context.referrerHost,
-        channel: context.channel,
-        utm: utmJson,
-        device: context.deviceCategory,
-        browser: context.browserCategory,
-        country: context.country,
-        props: JSON.stringify(event.props ?? {}),
-        conversion: event.conversion ?? null,
-        dedupe: event.dedupeKey ?? null,
-      });
-      stored += result.changes;
-
-      if (event.conversion) {
-        markConverted.run({ ts: timestamp, id: context.sessionId });
-      }
-    }
-
-    return stored;
-  });
-
-  return write();
+  return events.length - alreadyStored;
 }
 
 /* ---------------------------------------------------------------------------
@@ -181,118 +178,134 @@ export type OverviewMetrics = {
  */
 const ENGAGED_SECONDS = 30;
 
-export function overviewMetrics(range: Range): OverviewMetrics {
-  const db = getDb();
+export async function overviewMetrics(
+  range: Range
+): Promise<OverviewMetrics> {
+  const db = await getDb();
 
-  const counts = db
-    .prepare(
-      `SELECT
-         (SELECT COUNT(DISTINCT visitor_id) FROM sessions
-            WHERE started_at BETWEEN @from AND @to) AS visitors,
-         (SELECT COUNT(*) FROM sessions
-            WHERE started_at BETWEEN @from AND @to) AS sessions,
-         (SELECT COUNT(*) FROM sessions
-            WHERE started_at BETWEEN @from AND @to
-              AND (last_active_at - started_at) >= @engaged) AS engaged,
-         (SELECT COUNT(*) FROM sessions
-            WHERE started_at BETWEEN @from AND @to
-              AND channel = 'organic_search') AS organic,
-         (SELECT COUNT(*) FROM leads
-            WHERE created_at BETWEEN @from AND @to) AS leads,
-         (SELECT COUNT(*) FROM leads
-            WHERE created_at BETWEEN @from AND @to
-              AND status IN ('qualified','proposal_sent','won')) AS qualified,
-         (SELECT COUNT(*) FROM analytics_events
-            WHERE occurred_at BETWEEN @from AND @to
-              AND name IN ('contact_cta_click','email_click')) AS cta,
-         (SELECT COUNT(*) FROM analytics_events
-            WHERE occurred_at BETWEEN @from AND @to) AS events`
-    )
-    .get({ from: range.from, to: range.to, engaged: ENGAGED_SECONDS }) as Record<
-    string,
-    number
-  >;
+  const counts = await db.first<Record<string, number>>(
+    `SELECT
+       (SELECT COUNT(DISTINCT visitor_id) FROM sessions
+          WHERE started_at BETWEEN ? AND ?) AS visitors,
+       (SELECT COUNT(*) FROM sessions
+          WHERE started_at BETWEEN ? AND ?) AS sessions,
+       (SELECT COUNT(*) FROM sessions
+          WHERE started_at BETWEEN ? AND ?
+            AND (last_active_at - started_at) >= ?) AS engaged,
+       (SELECT COUNT(*) FROM sessions
+          WHERE started_at BETWEEN ? AND ?
+            AND channel = 'organic_search') AS organic,
+       (SELECT COUNT(*) FROM leads
+          WHERE created_at BETWEEN ? AND ?) AS leads,
+       (SELECT COUNT(*) FROM leads
+          WHERE created_at BETWEEN ? AND ?
+            AND status IN ('qualified','proposal_sent','won')) AS qualified,
+       (SELECT COUNT(*) FROM analytics_events
+          WHERE occurred_at BETWEEN ? AND ?
+            AND name IN ('contact_cta_click','email_click')) AS cta,
+       (SELECT COUNT(*) FROM analytics_events
+          WHERE occurred_at BETWEEN ? AND ?) AS events`,
+    [
+      range.from, range.to,
+      range.from, range.to,
+      range.from, range.to, ENGAGED_SECONDS,
+      range.from, range.to,
+      range.from, range.to,
+      range.from, range.to,
+      range.from, range.to,
+      range.from, range.to,
+    ]
+  );
 
-  const returning = db
-    .prepare(
-      `SELECT COUNT(*) AS n FROM (
-         SELECT visitor_id FROM sessions
-          WHERE started_at BETWEEN @from AND @to
-          GROUP BY visitor_id
-         HAVING COUNT(DISTINCT date(started_at, 'unixepoch')) > 1
-       )`
-    )
-    .get({ from: range.from, to: range.to }) as { n: number };
+  const row = counts ?? {};
 
-  const visitors = counts.visitors ?? 0;
-  const sessions = counts.sessions ?? 0;
+  const returning = await db.first<{ n: number }>(
+    `SELECT COUNT(*) AS n FROM (
+       SELECT visitor_id FROM sessions
+        WHERE started_at BETWEEN ? AND ?
+        GROUP BY visitor_id
+       HAVING COUNT(DISTINCT date(started_at, 'unixepoch')) > 1
+     )`,
+    [range.from, range.to]
+  );
+
+  const visitors = row.visitors ?? 0;
+  const sessions = row.sessions ?? 0;
 
   return {
     visitors,
     sessions,
-    engagedSessions: counts.engaged ?? 0,
-    organicSessions: counts.organic ?? 0,
-    leads: counts.leads ?? 0,
-    qualifiedLeads: counts.qualified ?? 0,
-    contactClicks: counts.cta ?? 0,
-    conversionRate: sessions > 0 ? (counts.leads ?? 0) / sessions : null,
-    returningVisitorRate: visitors > 0 ? returning.n / visitors : null,
-    totalEvents: counts.events ?? 0,
+    engagedSessions: row.engaged ?? 0,
+    organicSessions: row.organic ?? 0,
+    leads: row.leads ?? 0,
+    qualifiedLeads: row.qualified ?? 0,
+    contactClicks: row.cta ?? 0,
+    conversionRate: sessions > 0 ? (row.leads ?? 0) / sessions : null,
+    returningVisitorRate:
+      visitors > 0 ? (returning?.n ?? 0) / visitors : null,
+    totalEvents: row.events ?? 0,
   };
 }
 
 export type TimePoint = { date: string; value: number };
 
-export function eventSeries(
+export async function eventSeries(
   name: string,
   range: Range,
   extraNames: string[] = []
-): TimePoint[] {
-  const db = getDb();
+): Promise<TimePoint[]> {
+  const db = await getDb();
   const names = [name, ...extraNames];
   const placeholders = names.map(() => "?").join(",");
-  const rows = db
-    .prepare(
-      `SELECT date(occurred_at, 'unixepoch') AS day, COUNT(*) AS n
-         FROM analytics_events
-        WHERE occurred_at BETWEEN ? AND ?
-          AND name IN (${placeholders})
-        GROUP BY day
-        ORDER BY day`
-    )
-    .all(range.from, range.to, ...names) as { day: string; n: number }[];
 
-  return fillDays(range, rows.map((row) => ({ date: row.day, value: row.n })));
+  const rows = await db.all<{ day: string; n: number }>(
+    `SELECT date(occurred_at, 'unixepoch') AS day, COUNT(*) AS n
+       FROM analytics_events
+      WHERE occurred_at BETWEEN ? AND ?
+        AND name IN (${placeholders})
+      GROUP BY day
+      ORDER BY day`,
+    [range.from, range.to, ...names]
+  );
+
+  return fillDays(
+    range,
+    rows.map((row) => ({ date: row.day, value: row.n }))
+  );
 }
 
-export function sessionSeries(range: Range): TimePoint[] {
-  const db = getDb();
-  const rows = db
-    .prepare(
-      `SELECT date(started_at, 'unixepoch') AS day, COUNT(*) AS n
-         FROM sessions
-        WHERE started_at BETWEEN ? AND ?
-        GROUP BY day
-        ORDER BY day`
-    )
-    .all(range.from, range.to) as { day: string; n: number }[];
+export async function sessionSeries(range: Range): Promise<TimePoint[]> {
+  const db = await getDb();
+  const rows = await db.all<{ day: string; n: number }>(
+    `SELECT date(started_at, 'unixepoch') AS day, COUNT(*) AS n
+       FROM sessions
+      WHERE started_at BETWEEN ? AND ?
+      GROUP BY day
+      ORDER BY day`,
+    [range.from, range.to]
+  );
 
-  return fillDays(range, rows.map((row) => ({ date: row.day, value: row.n })));
+  return fillDays(
+    range,
+    rows.map((row) => ({ date: row.day, value: row.n }))
+  );
 }
 
-export function leadSeries(range: Range): TimePoint[] {
-  const db = getDb();
-  const rows = db
-    .prepare(
-      `SELECT date(created_at, 'unixepoch') AS day, COUNT(*) AS n
-         FROM leads
-        WHERE created_at BETWEEN ? AND ?
-        GROUP BY day
-        ORDER BY day`
-    )
-    .all(range.from, range.to) as { day: string; n: number }[];
+export async function leadSeries(range: Range): Promise<TimePoint[]> {
+  const db = await getDb();
+  const rows = await db.all<{ day: string; n: number }>(
+    `SELECT date(created_at, 'unixepoch') AS day, COUNT(*) AS n
+       FROM leads
+      WHERE created_at BETWEEN ? AND ?
+      GROUP BY day
+      ORDER BY day`,
+    [range.from, range.to]
+  );
 
-  return fillDays(range, rows.map((row) => ({ date: row.day, value: row.n })));
+  return fillDays(
+    range,
+    rows.map((row) => ({ date: row.day, value: row.n }))
+  );
 }
 
 /** Fills missing days with zero so a chart never has a gap it implies. */
@@ -314,44 +327,51 @@ function fillDays(range: Range, points: TimePoint[]): TimePoint[] {
 
 export type ChannelCount = { channel: string; sessions: number; leads: number };
 
-export function channelBreakdown(range: Range): ChannelCount[] {
-  const db = getDb();
-  return db
-    .prepare(
-      `SELECT
-         COALESCE(s.channel, 'other') AS channel,
-         COUNT(DISTINCT s.id) AS sessions,
-         (SELECT COUNT(*) FROM leads l
-           WHERE l.created_at BETWEEN @from AND @to
-             AND l.source = COALESCE(s.channel, 'other')) AS leads
-       FROM sessions s
-      WHERE s.started_at BETWEEN @from AND @to
-      GROUP BY channel
-      ORDER BY sessions DESC`
-    )
-    .all({ from: range.from, to: range.to }) as ChannelCount[];
+export async function channelBreakdown(
+  range: Range
+): Promise<ChannelCount[]> {
+  const db = await getDb();
+  return db.all<ChannelCount>(
+    `SELECT
+       COALESCE(s.channel, 'other') AS channel,
+       COUNT(DISTINCT s.id) AS sessions,
+       (SELECT COUNT(*) FROM leads l
+         WHERE l.created_at BETWEEN ? AND ?
+           AND l.source = COALESCE(s.channel, 'other')) AS leads
+     FROM sessions s
+    WHERE s.started_at BETWEEN ? AND ?
+    GROUP BY channel
+    ORDER BY sessions DESC`,
+    [range.from, range.to, range.from, range.to]
+  );
 }
 
-export type LandingPageCount = { path: string; sessions: number; leads: number };
+export type LandingPageCount = {
+  path: string;
+  sessions: number;
+  leads: number;
+};
 
-export function landingPages(range: Range, limit = 10): LandingPageCount[] {
-  const db = getDb();
-  return db
-    .prepare(
-      `SELECT
-         s.entry_path AS path,
-         COUNT(DISTINCT s.id) AS sessions,
-         (SELECT COUNT(*) FROM leads l
-           WHERE l.created_at BETWEEN @from AND @to
-             AND l.landing_path = s.entry_path) AS leads
-       FROM sessions s
-      WHERE s.started_at BETWEEN @from AND @to
-        AND s.entry_path IS NOT NULL
-      GROUP BY s.entry_path
-      ORDER BY sessions DESC
-      LIMIT ?`
-    )
-    .all({ from: range.from, to: range.to }, limit) as LandingPageCount[];
+export async function landingPages(
+  range: Range,
+  limit = 10
+): Promise<LandingPageCount[]> {
+  const db = await getDb();
+  return db.all<LandingPageCount>(
+    `SELECT
+       s.entry_path AS path,
+       COUNT(DISTINCT s.id) AS sessions,
+       (SELECT COUNT(*) FROM leads l
+         WHERE l.created_at BETWEEN ? AND ?
+           AND l.landing_path = s.entry_path) AS leads
+     FROM sessions s
+    WHERE s.started_at BETWEEN ? AND ?
+      AND s.entry_path IS NOT NULL
+    GROUP BY s.entry_path
+    ORDER BY sessions DESC
+    LIMIT ?`,
+    [range.from, range.to, range.from, range.to, limit]
+  );
 }
 
 export type CaseStudyInterest = {
@@ -361,145 +381,144 @@ export type CaseStudyInterest = {
   cta_clicks: number;
 };
 
-export function caseStudyInterest(range: Range): CaseStudyInterest[] {
-  const db = getDb();
-  const rows = db
-    .prepare(
-      `SELECT
-         json_extract(props, '$.case_study_id') AS id,
-         json_extract(props, '$.case_study_title') AS title,
-         COUNT(DISTINCT session_id) AS views,
-         SUM(CASE WHEN name = 'case_study_cta_click' THEN 1 ELSE 0 END) AS cta_clicks
-       FROM analytics_events
-      WHERE occurred_at BETWEEN ? AND ?
-        AND name IN ('case_study_view', 'case_study_cta_click')
-        AND json_extract(props, '$.case_study_id') IS NOT NULL
-      GROUP BY id
-      ORDER BY views DESC`
-    )
-    .all(range.from, range.to) as CaseStudyInterest[];
-  return rows;
+export async function caseStudyInterest(
+  range: Range
+): Promise<CaseStudyInterest[]> {
+  const db = await getDb();
+  return db.all<CaseStudyInterest>(
+    `SELECT
+       json_extract(props, '$.case_study_id') AS id,
+       json_extract(props, '$.case_study_title') AS title,
+       COUNT(DISTINCT session_id) AS views,
+       SUM(CASE WHEN name = 'case_study_cta_click' THEN 1 ELSE 0 END) AS cta_clicks
+     FROM analytics_events
+    WHERE occurred_at BETWEEN ? AND ?
+      AND name IN ('case_study_view', 'case_study_cta_click')
+      AND json_extract(props, '$.case_study_id') IS NOT NULL
+    GROUP BY id
+    ORDER BY views DESC`,
+    [range.from, range.to]
+  );
 }
 
 export type EventTypeCount = { name: string; count: number };
 
-export function eventTypeBreakdown(range: Range): EventTypeCount[] {
-  const db = getDb();
-  return db
-    .prepare(
-      `SELECT name, COUNT(*) AS count
-         FROM analytics_events
-        WHERE occurred_at BETWEEN ? AND ?
-        GROUP BY name
-        ORDER BY count DESC`
-    )
-    .all(range.from, range.to) as EventTypeCount[];
+export async function eventTypeBreakdown(
+  range: Range
+): Promise<EventTypeCount[]> {
+  const db = await getDb();
+  return db.all<EventTypeCount>(
+    `SELECT name, COUNT(*) AS count
+       FROM analytics_events
+      WHERE occurred_at BETWEEN ? AND ?
+      GROUP BY name
+      ORDER BY count DESC`,
+    [range.from, range.to]
+  );
 }
 
 export type DeviceCount = { device: string; sessions: number };
 
-export function deviceBreakdown(range: Range): DeviceCount[] {
-  const db = getDb();
-  return db
-    .prepare(
-      `SELECT COALESCE(device_category, 'unknown') AS device,
-              COUNT(DISTINCT id) AS sessions
-         FROM sessions
-        WHERE started_at BETWEEN ? AND ?
-        GROUP BY device
-        ORDER BY sessions DESC`
-    )
-    .all(range.from, range.to) as DeviceCount[];
+export async function deviceBreakdown(
+  range: Range
+): Promise<DeviceCount[]> {
+  const db = await getDb();
+  return db.all<DeviceCount>(
+    `SELECT COALESCE(device_category, 'unknown') AS device,
+            COUNT(DISTINCT id) AS sessions
+       FROM sessions
+      WHERE started_at BETWEEN ? AND ?
+      GROUP BY device
+      ORDER BY sessions DESC`,
+    [range.from, range.to]
+  );
 }
 
 export type ServiceInterestCount = { service: string; count: number };
 
-export function serviceInterest(range: Range): ServiceInterestCount[] {
-  const db = getDb();
-  return db
-    .prepare(
-      `SELECT COALESCE(service_interest, 'unspecified') AS service, COUNT(*) AS count
-         FROM leads
-        WHERE created_at BETWEEN ? AND ?
-        GROUP BY service
-        ORDER BY count DESC`
-    )
-    .all(range.from, range.to) as ServiceInterestCount[];
-}
-
-/** Percentage of visitors who came back on a later day. */
-export function returningVisitorRate(range: Range): number | null {
-  const db = getDb();
-  const total = (
-    db
-      .prepare(
-        `SELECT COUNT(DISTINCT visitor_id) AS n FROM sessions
-          WHERE started_at BETWEEN ? AND ?`
-      )
-      .get(range.from, range.to) as { n: number }
-  ).n;
-
-  if (total === 0) return null;
-
-  const returning = (
-    db
-      .prepare(
-        `SELECT COUNT(*) AS n FROM (
-           SELECT visitor_id FROM sessions
-            WHERE started_at BETWEEN ? AND ?
-            GROUP BY visitor_id
-           HAVING COUNT(DISTINCT date(started_at, 'unixepoch')) > 1
-         )`
-      )
-      .get(range.from, range.to) as { n: number }
-  ).n;
-
-  return returning / total;
-}
-
-/** Most recent events, for a live feed. */
-export function recentEvents(limit = 25): EventRow[] {
-  const db = getDb();
-  return db
-    .prepare(
-      `SELECT * FROM analytics_events
-        ORDER BY occurred_at DESC
-        LIMIT ?`
-    )
-    .all(limit) as EventRow[];
-}
-
-export function visitorCount(range: Range): number {
-  const db = getDb();
-  return (
-    db
-      .prepare(
-        `SELECT COUNT(DISTINCT visitor_id) AS n FROM sessions
-          WHERE started_at BETWEEN ? AND ?`
-      )
-      .get(range.from, range.to) as { n: number }
-  ).n;
-}
-
-export function getVisitor(id: string): VisitorRow | null {
-  const db = getDb();
-  return (
-    (db.prepare("SELECT * FROM visitors WHERE id = ?").get(id) as VisitorRow) ?? null
+export async function serviceInterest(
+  range: Range
+): Promise<ServiceInterestCount[]> {
+  const db = await getDb();
+  return db.all<ServiceInterestCount>(
+    `SELECT COALESCE(service_interest, 'unspecified') AS service, COUNT(*) AS count
+       FROM leads
+      WHERE created_at BETWEEN ? AND ?
+      GROUP BY service
+      ORDER BY count DESC`,
+    [range.from, range.to]
   );
 }
 
+/** Percentage of visitors who came back on a later day. */
+export async function returningVisitorRate(
+  range: Range
+): Promise<number | null> {
+  const db = await getDb();
+  const total = await db.first<{ n: number }>(
+    `SELECT COUNT(DISTINCT visitor_id) AS n FROM sessions
+      WHERE started_at BETWEEN ? AND ?`,
+    [range.from, range.to]
+  );
+
+  if (!total || total.n === 0) return null;
+
+  const returning = await db.first<{ n: number }>(
+    `SELECT COUNT(*) AS n FROM (
+       SELECT visitor_id FROM sessions
+        WHERE started_at BETWEEN ? AND ?
+        GROUP BY visitor_id
+       HAVING COUNT(DISTINCT date(started_at, 'unixepoch')) > 1
+     )`,
+    [range.from, range.to]
+  );
+
+  return (returning?.n ?? 0) / total.n;
+}
+
+/** Most recent events, for a live feed. */
+export async function recentEvents(limit = 25): Promise<EventRow[]> {
+  const db = await getDb();
+  return db.all<EventRow>(
+    `SELECT * FROM analytics_events
+      ORDER BY occurred_at DESC
+      LIMIT ?`,
+    [limit]
+  );
+}
+
+export async function visitorCount(range: Range): Promise<number> {
+  const db = await getDb();
+  const row = await db.first<{ n: number }>(
+    `SELECT COUNT(DISTINCT visitor_id) AS n FROM sessions
+      WHERE started_at BETWEEN ? AND ?`,
+    [range.from, range.to]
+  );
+  return row?.n ?? 0;
+}
+
+export async function getVisitor(id: string): Promise<VisitorRow | null> {
+  const db = await getDb();
+  return db.first<VisitorRow>("SELECT * FROM visitors WHERE id = ?", [id]);
+}
+
 /** Applies the retention policy. Called by the prune script and the route. */
-export function pruneEvents(retentionDays: number): number {
-  const db = getDb();
+export async function pruneEvents(retentionDays: number): Promise<number> {
+  const db = await getDb();
   const cutoff = now() - retentionDays * 86400;
-  const events = db
-    .prepare("DELETE FROM analytics_events WHERE occurred_at < ?")
-    .run(cutoff).changes;
-  const sessions = db
-    .prepare("DELETE FROM sessions WHERE last_active_at < ?")
-    .run(cutoff).changes;
-  const visitors = db
-    .prepare("DELETE FROM visitors WHERE last_seen_at < ?")
-    .run(cutoff).changes;
-  return events + sessions + visitors;
+
+  const events = await db.run(
+    "DELETE FROM analytics_events WHERE occurred_at < ?",
+    [cutoff]
+  );
+  const sessions = await db.run(
+    "DELETE FROM sessions WHERE last_active_at < ?",
+    [cutoff]
+  );
+  const visitors = await db.run(
+    "DELETE FROM visitors WHERE last_seen_at < ?",
+    [cutoff]
+  );
+
+  return events.changes + sessions.changes + visitors.changes;
 }

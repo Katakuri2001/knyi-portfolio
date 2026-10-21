@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type { NextRequest, NextResponse } from "next/server";
+import { isSecureRequest, requestHost } from "./request-origin.ts";
 
 /**
  * Admin session helpers.
@@ -71,34 +72,23 @@ export function hasValidSession(request: NextRequest): boolean {
  * Defence in depth against cross-site writes. The cookie is already
  * `SameSite=Strict`, so a cross-site form post would not carry it — this
  * rejects the remainder.
+ *
+ * The comparison is against the host the **visitor** addressed, not against
+ * `request.nextUrl.host`. On Cloudflare Workers the request reaches the
+ * application on an internal origin, so `nextUrl` names the wrong host and
+ * every legitimate write would be rejected. See `src/lib/request-origin.ts`.
  */
 export function isSameOrigin(request: NextRequest): boolean {
   const origin = request.headers.get("origin");
   if (!origin) return true;
   try {
-    return new URL(origin).host === request.nextUrl.host;
+    return new URL(origin).host === requestHost(request);
   } catch {
     return false;
   }
 }
 
-/**
- * Whether the request arrived over HTTPS.
- *
- * This is derived from the request, **not** from `NODE_ENV`. A production
- * build served over plain HTTP — which is what `npm start` on a laptop is —
- * would otherwise set a `Secure` cookie that the browser refuses to store,
- * making the console impossible to sign in to. Behind a proxy the
- * `x-forwarded-proto` header is what carries the real protocol.
- */
-export function isSecureRequest(request: {
-  headers: Headers;
-  nextUrl: URL;
-}): boolean {
-  const forwarded = request.headers.get("x-forwarded-proto");
-  const protocol = forwarded?.split(",")[0]?.trim() ?? request.nextUrl.protocol;
-  return protocol === "https" || protocol === "https:";
-}
+export { isSecureRequest };
 
 export function setSessionCookie(response: NextResponse, secure: boolean) {
   response.cookies.set(ADMIN_COOKIE, sessionToken(), {

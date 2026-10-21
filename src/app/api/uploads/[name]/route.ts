@@ -1,24 +1,19 @@
-import fs from "node:fs";
-import path from "node:path";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import {
-  contentTypeFor,
-  filenameFromPublicPath,
-  UPLOAD_DIR,
-} from "@/lib/uploads";
+import { readUpload } from "@/lib/uploads";
 
 export const runtime = "nodejs";
 
 /**
  * GET /api/uploads/<name>
  *
- * Serves an uploaded campaign image from disk.
+ * Serves an uploaded campaign image.
  *
  * Uploads are written after the build, and `next start` snapshots `public/` at
  * build time, so a file in `public/uploads/` is not reachable at
- * `/uploads/<name>` until the next build. This handler always reads from disk,
- * so an upload is live the moment it is saved.
+ * `/uploads/<name>` until the next build. This handler always reads from the
+ * store — the local directory on a Node host, the R2 bucket on Cloudflare — so
+ * an upload is live the moment it is saved.
  *
  * The filename is matched against a strict pattern before it is used, so a
  * crafted path cannot escape the uploads directory.
@@ -29,26 +24,18 @@ export async function GET(
 ) {
   const { name } = await context.params;
 
-  const filename = filenameFromPublicPath(`/api/uploads/${name}`);
-  if (!filename) {
+  const stored = await readUpload(name);
+  if (!stored) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const filePath = path.join(UPLOAD_DIR, filename);
-  if (!filePath.startsWith(UPLOAD_DIR + path.sep)) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
-  if (!fs.existsSync(filePath)) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-  }
-
-  const body = fs.readFileSync(filePath);
+  // A Buffer is a Uint8Array, which Next's Response body accepts.
+  const body = new Uint8Array(stored.body);
 
   return new NextResponse(body, {
     headers: {
-      "Content-Type": contentTypeFor(filename),
-      "Content-Length": String(body.length),
+      "Content-Type": stored.contentType,
+      "Content-Length": String(body.byteLength),
       // Filenames are unique per upload, so the bytes never change.
       "Cache-Control": "public, max-age=31536000, immutable",
       "X-Content-Type-Options": "nosniff",

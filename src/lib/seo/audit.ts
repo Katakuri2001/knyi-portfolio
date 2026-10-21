@@ -154,7 +154,7 @@ export async function runTechnicalAudit(fallbackBase?: string): Promise<AuditRes
   const base = auditBaseUrl(fallbackBase);
   const runId = `audit_${now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-  createAuditRun(runId, base);
+  await createAuditRun(runId, base);
 
   const issues: AuditIssueInput[] = [];
   let pagesChecked = 0;
@@ -175,6 +175,13 @@ export async function runTechnicalAudit(fallbackBase?: string): Promise<AuditRes
           remediation:
             "Check that the site is running and that the path resolves. If this is a deployment issue, the page is not being served.",
         });
+
+        // If the *first* route could not be reached, the origin itself is
+        // unreachable — every remaining route is on the same origin, so
+        // waiting for each of them in turn would just multiply one timeout
+        // by the number of routes. Stop here and say so.
+        if (pagesChecked === 0) break;
+
         continue;
       }
 
@@ -537,9 +544,9 @@ export async function runTechnicalAudit(fallbackBase?: string): Promise<AuditRes
     const warnings = issues.filter((issue) => issue.severity === "warning").length;
     const infos = issues.filter((issue) => issue.severity === "info").length;
 
-    for (const issue of issues) addAuditIssue(runId, issue);
+    for (const issue of issues) await addAuditIssue(runId, issue);
 
-    finishAuditRun(runId, {
+    await finishAuditRun(runId, {
       pages: pagesChecked,
       errors,
       warnings,
@@ -555,7 +562,7 @@ export async function runTechnicalAudit(fallbackBase?: string): Promise<AuditRes
       issues,
     };
   } catch (error) {
-    finishAuditRun(
+    await finishAuditRun(
       runId,
       { pages: pagesChecked, errors: 0, warnings: 0, infos: 0 },
       (error as Error).message

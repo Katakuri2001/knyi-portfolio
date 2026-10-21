@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createHash, randomUUID } from "node:crypto";
 import { recordEvents } from "@/lib/db/events";
+import { isSecureRequest } from "@/lib/request-origin";
 import { observeCampaign } from "@/lib/db/campaigns";
 import {
   classifyBrowser,
@@ -110,7 +111,7 @@ export async function POST(request: NextRequest) {
 
   // Merge into the stored attribution, honouring first-touch and
   // last-non-direct rules.
-  const stored = getVisitor(visitorId);
+  const stored = await getVisitor(visitorId);
   const previous = stored
     ? {
         channel: (stored.first_utm
@@ -139,7 +140,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ accepted: 0, stored: 0 });
   }
 
-  const stored2 = recordEvents(
+  const stored2 = await recordEvents(
     validated.map((event) => {
       const props: Record<string, string | number> = { ...event.props, channel };
       if (path) props.path = path;
@@ -159,11 +160,9 @@ export async function POST(request: NextRequest) {
     }
   );
 
-  observeCampaign(merged.first.utm, 1, 0);
+  await observeCampaign(merged.first.utm, 1, 0);
 
-  const secure =
-    request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() === "https" ||
-    request.nextUrl.protocol === "https:";
+  const secure = isSecureRequest(request);
 
   const response = NextResponse.json({ accepted: validated.length, stored: stored2 });
   attachVisitorCookies(response, visitorId, sessionId, secure);

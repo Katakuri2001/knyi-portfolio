@@ -11,8 +11,8 @@ import { EXPERTISE_GROUPS, getServices } from "@/lib/content";
  * in one place.
  */
 
-export function ExpertiseSection() {
-  const services = getServices();
+export async function ExpertiseSection() {
+  const services = await getServices();
 
   return (
     <section id="expertise" className="band-sunken relative">

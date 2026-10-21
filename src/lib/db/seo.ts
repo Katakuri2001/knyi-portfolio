@@ -28,39 +28,42 @@ export type SeoMetadataInput = {
 /**
  * Writes a metadata override for a path.
  *
- * The path must be a site-relative path that is not under `/admin` or
- * `/api` — the public pages and the console are separate surfaces, and an
- * override must never be able to change the console's own metadata.
+ * The path must be one the site actually serves, and it must not be a private
+ * path. The public page's `generateMetadata` reads these, so the change is
+ * real: the rendered title, description, canonical, Open Graph tags and robots
+ * directive all follow.
  */
-export function setSeoMetadata(
+export async function setSeoMetadata(
   path: string,
   input: SeoMetadataInput
-): SeoMetadataRow {
-  const db = getDb();
+): Promise<SeoMetadataRow> {
+  const db = await getDb();
   const timestamp = now();
-
-  const existing = getSeoMetadata(path);
+  const existing = await getSeoMetadata(path);
 
   const row: SeoMetadataRow = {
     path,
     seo_title: input.seoTitle ?? existing?.seo_title ?? null,
-    meta_description: input.metaDescription ?? existing?.meta_description ?? null,
+    meta_description:
+      input.metaDescription ?? existing?.meta_description ?? null,
     canonical_url: input.canonicalUrl ?? existing?.canonical_url ?? null,
     og_title: input.ogTitle ?? existing?.og_title ?? null,
     og_description: input.ogDescription ?? existing?.og_description ?? null,
     og_image: input.ogImage ?? existing?.og_image ?? null,
-    noindex: input.noindex === undefined ? (existing?.noindex ?? 0) : input.noindex ? 1 : 0,
+    noindex:
+      input.noindex === undefined
+        ? (existing?.noindex ?? 0)
+        : input.noindex
+          ? 1
+          : 0,
     updated_at: timestamp,
   };
 
-  db.prepare(
+  await db.run(
     `INSERT INTO seo_metadata (
        path, seo_title, meta_description, canonical_url, og_title,
        og_description, og_image, noindex, updated_at
-     ) VALUES (
-       @path, @seo_title, @meta_description, @canonical_url, @og_title,
-       @og_description, @og_image, @noindex, @updated_at
-     )
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT (path) DO UPDATE SET
        seo_title = excluded.seo_title,
        meta_description = excluded.meta_description,
@@ -69,39 +72,51 @@ export function setSeoMetadata(
        og_description = excluded.og_description,
        og_image = excluded.og_image,
        noindex = excluded.noindex,
-       updated_at = excluded.updated_at`
-  ).run(row);
+       updated_at = excluded.updated_at`,
+    [
+      row.path, row.seo_title, row.meta_description, row.canonical_url,
+      row.og_title, row.og_description, row.og_image, row.noindex,
+      row.updated_at,
+    ]
+  );
 
   return row;
 }
 
-export function getSeoMetadata(path: string): SeoMetadataRow | null {
-  const db = getDb();
-  return (
-    (db.prepare("SELECT * FROM seo_metadata WHERE path = ?").get(path) as
-      | SeoMetadataRow
-      | undefined) ?? null
+export async function getSeoMetadata(
+  path: string
+): Promise<SeoMetadataRow | null> {
+  const db = await getDb();
+  return db.first<SeoMetadataRow>(
+    "SELECT * FROM seo_metadata WHERE path = ?",
+    [path]
   );
 }
 
-export function listSeoMetadata(): SeoMetadataRow[] {
-  const db = getDb();
-  return db
-    .prepare("SELECT * FROM seo_metadata ORDER BY path")
-    .all() as SeoMetadataRow[];
+export async function listSeoMetadata(): Promise<SeoMetadataRow[]> {
+  const db = await getDb();
+  return db.all<SeoMetadataRow>("SELECT * FROM seo_metadata ORDER BY path");
 }
 
-export function deleteSeoMetadata(path: string): boolean {
-  const db = getDb();
-  return db.prepare("DELETE FROM seo_metadata WHERE path = ?").run(path).changes > 0;
+export async function deleteSeoMetadata(path: string): Promise<boolean> {
+  const db = await getDb();
+  const result = await db.run(
+    "DELETE FROM seo_metadata WHERE path = ?",
+    [path]
+  );
+  return result.changes > 0;
 }
 
 /* ---------------------------------------------------------------------------
    Audit runs and issues
    --------------------------------------------------------------------------- */
 
-export function createAuditRun(id: string, baseUrl: string): AuditRunRow {
-  const db = getDb();
+export async function createAuditRun(
+  id: string,
+  baseUrl: string
+): Promise<AuditRunRow> {
+  const db = await getDb();
+
   const row: AuditRunRow = {
     id,
     started_at: now(),
@@ -115,15 +130,17 @@ export function createAuditRun(id: string, baseUrl: string): AuditRunRow {
     error: null,
   };
 
-  db.prepare(
+  await db.run(
     `INSERT INTO seo_audit_runs (
        id, started_at, finished_at, base_url, pages_checked,
        error_count, warning_count, info_count, status, error
-     ) VALUES (
-       @id, @started_at, @finished_at, @base_url, @pages_checked,
-       @error_count, @warning_count, @info_count, @status, @error
-     )`
-  ).run(row);
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      row.id, row.started_at, row.finished_at, row.base_url,
+      row.pages_checked, row.error_count, row.warning_count, row.info_count,
+      row.status, row.error,
+    ]
+  );
 
   return row;
 }
@@ -136,70 +153,61 @@ export type AuditIssueInput = {
   remediation?: string | null;
 };
 
-export function addAuditIssue(runId: string, issue: AuditIssueInput): void {
-  const db = getDb();
-  db.prepare(
+export async function addAuditIssue(
+  runId: string,
+  issue: AuditIssueInput
+): Promise<void> {
+  const db = await getDb();
+  await db.run(
     `INSERT INTO seo_audit_issues (
        run_id, url, issue_type, severity, message, remediation, detected_at, status
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, 'open')`
-  ).run(
-    runId,
-    issue.url,
-    issue.issueType,
-    issue.severity,
-    issue.message,
-    issue.remediation ?? null,
-    now()
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, 'open')`,
+    [
+      runId, issue.url, issue.issueType, issue.severity, issue.message,
+      issue.remediation ?? null, now(),
+    ]
   );
 }
 
-export function finishAuditRun(
+export async function finishAuditRun(
   id: string,
   counts: { pages: number; errors: number; warnings: number; infos: number },
   error?: string
-): void {
-  const db = getDb();
-  db.prepare(
+): Promise<void> {
+  const db = await getDb();
+  await db.run(
     `UPDATE seo_audit_runs SET
-       finished_at = @finished, pages_checked = @pages,
-       error_count = @errors, warning_count = @warnings, info_count = @infos,
-       status = @status, error = @error
-     WHERE id = @id`
-  ).run({
-    id,
-    finished: now(),
-    pages: counts.pages,
-    errors: counts.errors,
-    warnings: counts.warnings,
-    infos: counts.infos,
-    status: error ? "failed" : "complete",
-    error: error ?? null,
-  });
-}
-
-export function latestAuditRun(): AuditRunRow | null {
-  const db = getDb();
-  return (
-    (db
-      .prepare("SELECT * FROM seo_audit_runs ORDER BY started_at DESC LIMIT 1")
-      .get() as AuditRunRow) ?? null
+       finished_at = ?, pages_checked = ?, error_count = ?,
+       warning_count = ?, info_count = ?, status = ?, error = ?
+     WHERE id = ?`,
+    [
+      now(), counts.pages, counts.errors, counts.warnings, counts.infos,
+      error ? "failed" : "complete", error ?? null, id,
+    ]
   );
 }
 
-export function auditIssues(runId: string): AuditIssueRow[] {
-  const db = getDb();
-  return db
-    .prepare(
-      `SELECT * FROM seo_audit_issues WHERE run_id = ?
-        ORDER BY CASE severity WHEN 'error' THEN 0 WHEN 'warning' THEN 1 ELSE 2 END,
-                 url, issue_type`
-    )
-    .all(runId) as AuditIssueRow[];
+export async function latestAuditRun(): Promise<AuditRunRow | null> {
+  const db = await getDb();
+  return db.first<AuditRunRow>(
+    "SELECT * FROM seo_audit_runs ORDER BY started_at DESC LIMIT 1"
+  );
 }
 
-export function listAuditRuns(limit = 20): AuditRunRow[] {
-  const db = getDb();
-  return db
-    .prepare("SELECT * FROM seo_audit_runs ORDER BY started_at DESC LIMIT ?")
-    .all(limit) as AuditRunRow[];
+export async function auditIssues(runId: string): Promise<AuditIssueRow[]> {
+  const db = await getDb();
+  return db.all<AuditIssueRow>(
+    `SELECT * FROM seo_audit_issues WHERE run_id = ?
+      ORDER BY CASE severity WHEN 'error' THEN 0 WHEN 'warning' THEN 1 ELSE 2 END,
+               url, issue_type`,
+    [runId]
+  );
+}
+
+export async function listAuditRuns(limit = 20): Promise<AuditRunRow[]> {
+  const db = await getDb();
+  return db.all<AuditRunRow>(
+    "SELECT * FROM seo_audit_runs ORDER BY started_at DESC LIMIT ?",
+    [limit]
+  );
 }

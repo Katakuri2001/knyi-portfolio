@@ -414,8 +414,8 @@ export async function checkIntegration(
 }
 
 /** The last recorded state of an integration, if any. */
-export function lastState(key: string) {
-  return integrationState(key);
+export async function lastState(key: string) {
+  return await integrationState(key);
 }
 
 export { parseServiceAccount };

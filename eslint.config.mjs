@@ -14,6 +14,11 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // The GitHub Pages export builds into its own directory.
     ".next-pages/**",
+    // The OpenNext Worker bundle is generated, and it is minified.
+    ".open-next/**",
+    // The local Cloudflare state — the development D1 database, the local R2
+    // buckets — is generated.
+    ".wrangler/**",
     // The runtime database is not source.
     "data/**",
   ]),

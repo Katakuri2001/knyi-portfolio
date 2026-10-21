@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { forbidden, isAdminRequest, isSameOrigin, unauthorized } from "@/lib/admin-api";
 import { runTechnicalAudit } from "@/lib/seo/audit";
+import { requestOrigin } from "@/lib/request-origin";
 
 /**
  * POST /api/admin/seo/audit — runs the technical SEO audit.
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
   try {
     // Audit the instance that is actually running, so the findings describe
     // the build in front of you.
-    const result = await runTechnicalAudit(request.nextUrl.origin);
+    const result = await runTechnicalAudit(requestOrigin(request));
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(

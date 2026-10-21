@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
 /**
  * Two build targets.
@@ -17,6 +18,18 @@ import type { NextConfig } from "next";
 
 const isPages = process.env.NEXT_TARGET === "pages";
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
+// In development, this wires the D1 and R2 bindings into `next dev`, so the
+// console talks to a local database exactly as it will to the deployed one.
+// It is a no-op outside development, and it is not called at all when the
+// OpenNext package is absent.
+if (process.env.NODE_ENV === "development") {
+  try {
+    initOpenNextCloudflareForDev();
+  } catch {
+    // The Cloudflare bindings are optional locally; the SQLite file is used.
+  }
+}
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,

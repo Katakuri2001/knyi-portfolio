@@ -1,0 +1,51 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "knyi-portfolio",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-04-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".open-next/assets",
+    "not_found_handling": "404-page"
+  },
+
+  "observability": {
+    "enabled": true
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "knyi-portfolio",
+      "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID",
+      "migrations_dir": "src/lib/db/migrations"
+    },
+    {
+      "binding": "NEXT_TAG_CACHE_D1",
+      "database_name": "knyi-cache",
+      "database_id": "REPLACE_WITH_YOUR_CACHE_DATABASE_ID",
+      "migrations_dir": "migrations/cache"
+    }
+  ],
+
+  "images": {
+    "binding": "IMAGES"
+  },
+
+  "r2_buckets": [
+    {
+      "binding": "UPLOADS",
+      "bucket_name": "knyi-uploads"
+    },
+    {
+      "binding": "NEXT_INC_CACHE_R2_BUCKET",
+      "bucket_name": "knyi-cache"
+    }
+  ],
+
+  "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://knyimediabuyer.xyz"
+  }
+}

@@ -38,11 +38,11 @@ export default async function AudiencePage({
   );
   const range = resolveRange(flat);
 
-  const metrics = overviewMetrics(range);
-  const devices = deviceBreakdown(range);
-  const services = serviceInterest(range);
-  const landings = landingPages(range, 10);
-  const caseStudies = caseStudyInterest(range);
+  const metrics = await overviewMetrics(range);
+  const devices = await deviceBreakdown(range);
+  const services = await serviceInterest(range);
+  const landings = await landingPages(range, 10);
+  const caseStudies = await caseStudyInterest(range);
 
   const hasData =
     metrics.sessions > 0 || metrics.leads > 0 || devices.length > 0;

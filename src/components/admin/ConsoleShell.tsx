@@ -125,8 +125,13 @@ export function ConsoleShell({
             </ul>
 
             <div className="mt-6 space-y-2 border-t border-rule/15 pt-4">
+              {/* No prefetch: this leaves the console for a different page, so
+                  the payload of the whole public site is not worth fetching in
+                  advance — and the open connection it leaves behind ties up a
+                  request on every console page. */}
               <Link
                 href="/"
+                prefetch={false}
                 className="block text-[0.8125rem] text-muted-text transition-colors hover:text-accent-ink"
               >
                 View public site ↗
@@ -168,6 +173,7 @@ export function ConsoleShell({
             <div className="flex gap-5 border-t border-rule/10 px-4 py-3">
               <Link
                 href="/"
+                prefetch={false}
                 className="text-[0.8125rem] text-muted-text"
               >
                 Public site ↗

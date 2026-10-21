@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
   const from = fromParam ? Number(fromParam) : null;
   const to = toParam ? Number(toParam) : null;
 
-  const result = listLeads({
+  const result = await listLeads({
     status,
     search: params.get("q") || null,
     from: Number.isFinite(from) ? from : null,
@@ -101,7 +101,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   try {
-    const updated = updateLead(id, update);
+    const updated = await updateLead(id, update);
     if (!updated) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
   if (!note) return badRequest("A note cannot be empty.");
 
   try {
-    return NextResponse.json(addLeadNote(id, note));
+    return NextResponse.json(await addLeadNote(id, note));
   } catch (error) {
     return serverError((error as Error).message);
   }
@@ -139,7 +139,7 @@ export async function DELETE(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("id");
   if (!id) return badRequest("A lead id is required.");
 
-  if (!deleteLead(id)) {
+  if (!await deleteLead(id)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   return NextResponse.json({ success: true });

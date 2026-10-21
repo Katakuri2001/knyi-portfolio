@@ -18,8 +18,8 @@ type Entry = {
   ongoing: boolean;
 };
 
-export function EducationSection() {
-  const { completed, currentlyStudying, university } = getEducation();
+export async function EducationSection() {
+  const { completed, currentlyStudying, university } = await getEducation();
 
   // Ongoing entries first, then completed ones newest-first.
   const timeline: Entry[] = [

@@ -43,16 +43,16 @@ export default async function AnalyticsPage({
   );
   const range = resolveRange(flat);
 
-  const metrics = overviewMetrics(range);
-  const previous = overviewMetrics(range.previous);
-  const series = sessionSeries(range);
-  const channels = channelBreakdown(range);
-  const devices = deviceBreakdown(range);
-  const events = eventTypeBreakdown(range);
-  const landings = landingPages(range, 12);
-  const caseStudies = caseStudyInterest(range);
-  const feed = recentEvents(20);
-  const returning = visitorCount(range);
+  const metrics = await overviewMetrics(range);
+  const previous = await overviewMetrics(range.previous);
+  const series = await sessionSeries(range);
+  const channels = await channelBreakdown(range);
+  const devices = await deviceBreakdown(range);
+  const events = await eventTypeBreakdown(range);
+  const landings = await landingPages(range, 12);
+  const caseStudies = await caseStudyInterest(range);
+  const feed = await recentEvents(20);
+  const returning = await visitorCount(range);
 
   const engagedRate =
     metrics.sessions > 0 ? metrics.engagedSessions / metrics.sessions : null;

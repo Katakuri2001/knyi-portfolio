@@ -33,7 +33,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   if (!isAdminRequest(request)) return unauthorized();
-  return NextResponse.json({ experiments: listExperiments() });
+  return NextResponse.json({ experiments: await listExperiments() });
 }
 
 export async function POST(request: NextRequest) {
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const experiment = createExperiment(`exp_${randomUUID().slice(0, 8)}`, {
+    const experiment = await createExperiment(`exp_${randomUUID().slice(0, 8)}`, {
       hypothesis,
       target: cleanString(input.target, 200),
       change: cleanString(input.change, 2000),
@@ -96,7 +96,7 @@ export async function PUT(request: NextRequest) {
   }
 
   try {
-    const updated = updateExperiment(id, {
+    const updated = await updateExperiment(id, {
       hypothesis:
         input.hypothesis === undefined
           ? undefined
@@ -154,7 +154,7 @@ export async function DELETE(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("id");
   if (!id) return badRequest("An experiment id is required.");
 
-  if (!deleteExperiment(id)) {
+  if (!await deleteExperiment(id)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   return NextResponse.json({ success: true });

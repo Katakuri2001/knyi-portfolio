@@ -37,7 +37,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   if (!isAdminRequest(request)) return unauthorized();
-  return NextResponse.json({ overrides: listSeoMetadata() });
+  return NextResponse.json({ overrides: await listSeoMetadata() });
 }
 
 export async function PUT(request: NextRequest) {
@@ -88,7 +88,7 @@ export async function PUT(request: NextRequest) {
   }
 
   try {
-    const row = setSeoMetadata(path, {
+    const row = await setSeoMetadata(path, {
       seoTitle: cleanString(input.seoTitle, 160),
       metaDescription: cleanString(input.metaDescription, 320),
       canonicalUrl: canonical,
@@ -113,7 +113,7 @@ export async function DELETE(request: NextRequest) {
   const path = request.nextUrl.searchParams.get("path");
   if (!path) return badRequest("A path is required.");
 
-  if (!deleteSeoMetadata(path)) {
+  if (!await deleteSeoMetadata(path)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   revalidatePath("/");

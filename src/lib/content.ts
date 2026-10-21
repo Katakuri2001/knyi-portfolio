@@ -1,146 +1,128 @@
+import "server-only";
+
+import { getDb, now } from "./db/index.ts";
+import type {
+  CaseStudy,
+  Education,
+  Profile,
+  Services,
+  Tools,
+} from "./db/content-types.ts";
+
+export type {
+  CaseStudy,
+  Education,
+  Profile,
+  Services,
+  Tools,
+} from "./db/content-types.ts";
+
 /**
- * Content layer — the single source of truth for every section.
+ * The content layer.
  *
- * ## Why this exists
+ * ## Where the content lives
  *
- * Each section used to hardcode a second copy of the strings in `content/`.
- * That is how `case-studies.json`'s `averageOrderValue: "US$3"` for the paratha
- * business drifted out of the rendered page. Every section now reads from here.
+ * The reviewed portfolio copy — profile, services, tools, education, case studies
+ * — is stored in the database, in a `content_documents` table that holds one
+ * JSON document per kind. The files in `content/` are the **seed**: they are
+ * bundled with the code and used when the database has no row for a kind, so a
+ * fresh deployment renders correctly before anything is seeded.
  *
- * ## Why it reads from disk at request time
- *
- * A static `import caseStudies from "...json"` is baked into the server bundle
- * at build time, so the /admin dashboard could write a new case study and the
- * public page would never show it. Reading with `fs` inside the render function
- * means:
- *
- *   - at build time the page is still statically prerendered (no fs = no
- *     dynamic IO, so Next keeps it as a static route), and
- *   - when /admin calls `revalidatePath("/")`, the re-render calls `fs` again
- *     and picks up the new file.
- *
- * Everything that reads this module is a server component or a route handler.
+ * Storing it in the database rather than on disk is what lets the console work
+ * on a platform with no writable filesystem — Cloudflare Workers, for one. The
+ * seed files stay in git as the reviewed starting point.
  */
 
-import fs from "node:fs";
-import path from "node:path";
+import { CONTENT_KINDS, SEEDS, type ContentKind } from "./db/seed.ts";
 
-/* ---------------------------------------------------------------------------
-   Types
-   --------------------------------------------------------------------------- */
+export { CONTENT_KINDS };
+export type { ContentKind };
 
-export type Profile = {
-  name: string;
-  professionalName: string;
-  tagline: string;
-  positioning: string;
-  background: string;
-  howITick: string;
-  whatIVALUE: string;
-  location: string;
-  remoteAvailability: string;
-  contact: {
-    email: string;
-    telegram: string;
-    phone: string;
-    website: string;
-  };
-};
+/** Reads a content document, falling back to the bundled seed. */
+export async function readContent<T>(kind: ContentKind): Promise<T> {
+  const db = await getDb();
+  const row = await db.first<{ data: string }>(
+    "SELECT data FROM content_documents WHERE kind = ?",
+    [kind]
+  );
 
-/** Mirrors `content/case-studies.json`. New fields are optional by design —
- *  a metric the owner has not supplied is simply absent, never invented. */
-export type CaseStudy = {
-  id: string;
-  title: string;
-  category: string;
-  platform: string;
-  adSpend?: string | null;
-  duration?: string | null;
-  audienceGrowth?: string | null;
-  orders?: string | null;
-  averageOrdersPerMonth?: string | null;
-  averageOrderValue?: string | null;
-  scope?: string | null;
-  reported?: boolean;
-  verified?: boolean;
-  methodologyNote?: string | null;
-  /** Public path of an uploaded image, e.g. "/api/uploads/abc.jpg". */
-  image?: string | null;
-  /** Description of the uploaded image, used as its alt text. */
-  imageAlt?: string | null;
-  /** Stored so the frame can reserve space before the image loads (no CLS). */
-  imageWidth?: number | null;
-  imageHeight?: number | null;
-  /** Display order. Items without one fall back to their position in the file. */
-  order?: number | null;
-};
+  if (row?.data) {
+    try {
+      return JSON.parse(row.data) as T;
+    } catch {
+      // A corrupt document must not take the page down; the seed is safe.
+    }
+  }
 
-export type Services = {
-  metaAds: { title: string; description: string; experience: string; learning: string };
-  contentStrategy: { title: string; description: string; experience: string; learning: string };
-  marketingAnalysis: { title: string; description: string; experience: string; learning: string };
-};
-
-export type Tools = {
-  practicalExposure: string[];
-  currentlyLearning: string[];
-};
-
-export type Education = {
-  completed: { name: string; institution: string; year: number }[];
-  currentlyStudying: { name: string; institution: string }[];
-  university: { status: string };
-};
-
-/* ---------------------------------------------------------------------------
-   Readers
-   --------------------------------------------------------------------------- */
-
-export const CONTENT_DIR = path.join(process.cwd(), "content");
-
-/** Accepts "case-studies" or "case-studies.json". */
-export function readJson<T>(name: string): T {
-  const file = name.endsWith(".json") ? name : `${name}.json`;
-  return JSON.parse(
-    fs.readFileSync(path.join(CONTENT_DIR, file), "utf-8")
-  ) as T;
+  return SEEDS[kind] as T;
 }
 
-export function writeJson(name: string, value: unknown) {
-  const file = name.endsWith(".json") ? name : `${name}.json`;
-  fs.writeFileSync(
-    path.join(CONTENT_DIR, file),
-    `${JSON.stringify(value, null, 2)}\n`,
-    "utf-8"
+/** Writes a content document. */
+export async function writeContent(
+  kind: ContentKind,
+  value: unknown
+): Promise<void> {
+  const db = await getDb();
+  await db.run(
+    `INSERT INTO content_documents (kind, data, updated_at)
+     VALUES (?, ?, ?)
+     ON CONFLICT (kind) DO UPDATE SET
+       data = excluded.data,
+       updated_at = excluded.updated_at`,
+    [kind, JSON.stringify(value, null, 2), now()]
   );
 }
 
-/** Ordered, as displayed on the public page. */
-export function getCaseStudies(): CaseStudy[] {
-  return readJson<CaseStudy[]>("case-studies.json")
-    .map((study, index) => ({ study, index }))
-    .sort(
-      (a, b) =>
-        (a.study.order ?? a.index) - (b.study.order ?? b.index) ||
-        a.index - b.index
-    )
-    .map((entry) => entry.study);
+/** Every content document, for a backup export. */
+export async function exportContent(): Promise<
+  Record<ContentKind, unknown>
+> {
+  const out = {} as Record<ContentKind, unknown>;
+  for (const kind of CONTENT_KINDS) {
+    out[kind] = await readContent(kind);
+  }
+  return out;
 }
 
-export function getProfile(): Profile {
-  return readJson<Profile>("profile.json");
+/** Seeds the store from the bundled files. Existing documents are left alone. */
+export async function seedContent(): Promise<number> {
+  const db = await getDb();
+  let seeded = 0;
+  for (const kind of CONTENT_KINDS) {
+    const existing = await db.first<{ n: number }>(
+      "SELECT COUNT(*) AS n FROM content_documents WHERE kind = ?",
+      [kind]
+    );
+    if (existing && existing.n > 0) continue;
+    await writeContent(kind, SEEDS[kind]);
+    seeded++;
+  }
+  return seeded;
 }
 
-export function getServices(): Services {
-  return readJson<Services>("services.json");
+/* ---------------------------------------------------------------------------
+   Typed readers
+   --------------------------------------------------------------------------- */
+
+export async function getCaseStudies(): Promise<CaseStudy[]> {
+  const data = await readContent<CaseStudy[]>("case-studies");
+  return Array.isArray(data) ? data : [];
 }
 
-export function getTools(): Tools {
-  return readJson<Tools>("tools.json");
+export async function getProfile(): Promise<Profile> {
+  return readContent<Profile>("profile");
 }
 
-export function getEducation(): Education {
-  return readJson<Education>("education.json");
+export async function getServices(): Promise<Services> {
+  return readContent<Services>("services");
+}
+
+export async function getTools(): Promise<Tools> {
+  return readContent<Tools>("tools");
+}
+
+export async function getEducation(): Promise<Education> {
+  return readContent<Education>("education");
 }
 
 /* ---------------------------------------------------------------------------

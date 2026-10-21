@@ -35,10 +35,10 @@ export default async function CampaignsPage({
   );
   const range = resolveRange(flat);
 
-  const channels = channelBreakdown(range);
-  const landings = landingPages(range, 10);
-  const observations = listObservations();
-  const byCampaign = leadsByCampaign(range);
+  const channels = await channelBreakdown(range);
+  const landings = await landingPages(range, 10);
+  const observations = await listObservations();
+  const byCampaign = await leadsByCampaign(range);
 
   const attributed = observations.filter((row) => row.campaign);
 

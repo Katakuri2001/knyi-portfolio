@@ -48,22 +48,22 @@ export default async function AdminOverviewPage({
   );
 
   const range = resolveRange(flat);
-  const current = overviewMetrics(range);
-  const previous = overviewMetrics(range.previous);
+  const current = await overviewMetrics(range);
+  const previous = await overviewMetrics(range.previous);
 
   const hasAnyData = current.totalEvents > 0 || current.leads > 0;
 
-  const channels = channelBreakdown(range);
-  const series = sessionSeries(range);
-  const leadTrend = leadSeries(range);
-  const landings = landingPages(range, 8);
-  const caseStudies = caseStudyInterest(range);
-  const conversions = eventTypeBreakdown(range).filter((row) =>
+  const channels = await channelBreakdown(range);
+  const series = await sessionSeries(range);
+  const leadTrend = await leadSeries(range);
+  const landings = await landingPages(range, 8);
+  const caseStudies = await caseStudyInterest(range);
+  const conversions = (await eventTypeBreakdown(range)).filter((row) =>
     ["contact_cta_click", "email_click", "contact_form_submit", "lead_created", "service_interest", "case_study_cta_click"].includes(
       row.name
     )
   );
-  const counts = leadCounts(range);
+  const counts = await leadCounts(range);
 
   const insights = buildInsights({
     visitors: current.visitors,

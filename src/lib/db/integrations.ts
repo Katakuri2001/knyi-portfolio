@@ -29,16 +29,16 @@ export type IntegrationState = {
   detail: string | null;
 };
 
-export function recordIntegrationState(
+export async function recordIntegrationState(
   key: string,
   status: IntegrationStatus,
   message: string | null,
   detail: string | null = null
-): void {
-  const db = getDb();
+): Promise<void> {
+  const db = await getDb();
   const timestamp = now();
 
-  db.prepare(
+  await db.run(
     `INSERT INTO integration_state (
        key, status, message, last_checked, last_success, detail
      ) VALUES (?, ?, ?, ?, ?, ?)
@@ -50,29 +50,25 @@ export function recordIntegrationState(
          WHEN excluded.status = 'connected' THEN excluded.last_checked
          ELSE integration_state.last_success
        END,
-       detail = excluded.detail`
-  ).run(
-    key,
-    status,
-    message,
-    timestamp,
-    status === "connected" ? timestamp : null,
-    detail
+       detail = excluded.detail`,
+    [
+      key, status, message, timestamp,
+      status === "connected" ? timestamp : null, detail,
+    ]
   );
 }
 
-export function integrationStates(): IntegrationState[] {
-  const db = getDb();
-  return db
-    .prepare("SELECT * FROM integration_state")
-    .all() as IntegrationState[];
+export async function integrationStates(): Promise<IntegrationState[]> {
+  const db = await getDb();
+  return db.all<IntegrationState>("SELECT * FROM integration_state");
 }
 
-export function integrationState(key: string): IntegrationState | null {
-  const db = getDb();
-  return (
-    (db.prepare("SELECT * FROM integration_state WHERE key = ?").get(key) as
-      | IntegrationState
-      | undefined) ?? null
+export async function integrationState(
+  key: string
+): Promise<IntegrationState | null> {
+  const db = await getDb();
+  return db.first<IntegrationState>(
+    "SELECT * FROM integration_state WHERE key = ?",
+    [key]
   );
 }

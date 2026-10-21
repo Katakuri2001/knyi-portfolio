@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { getProfile } from "@/lib/content";
 
 /**
@@ -16,8 +15,8 @@ const FOOTER_LINKS = [
   { href: "#contact", label: "Contact" },
 ];
 
-export function SiteFooter() {
-  const profile = getProfile();
+export async function SiteFooter() {
+  const profile = await getProfile();
   const year = new Date().getFullYear();
 
   return (
@@ -35,13 +34,13 @@ export function SiteFooter() {
             <ul className="grid grid-cols-2 gap-x-10 gap-y-3 sm:grid-cols-3">
               {FOOTER_LINKS.map((link) => (
                 <li key={link.href}>
-                  <Link
+                  <a
                     href={link.href}
                     className="inline-flex items-center gap-2 text-[0.875rem] text-on-dark/80 underline-offset-4 transition-colors duration-200 hover:text-accent-primary hover:underline"
                   >
                     <span aria-hidden="true" className="block h-px w-3 bg-current opacity-50" />
                     {link.label}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>

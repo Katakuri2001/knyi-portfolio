@@ -12,17 +12,18 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function IntegrationsPage() {
-  const rows = INTEGRATIONS.map((definition) => {
-    const state = lastState(definition.key);
-    return {
+  const rows = [];
+  for (const definition of INTEGRATIONS) {
+    const state = await lastState(definition.key);
+    rows.push({
       definition,
       status: state?.status ?? quickStatus(definition),
       message: state?.message ?? null,
       lastChecked: state?.last_checked ?? null,
       lastSuccess: state?.last_success ?? null,
       missing: missingVariables(definition),
-    };
-  });
+    });
+  }
 
   return (
     <>

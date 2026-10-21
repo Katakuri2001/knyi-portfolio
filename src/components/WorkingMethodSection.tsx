@@ -57,7 +57,7 @@ const STAGES = [
   },
 ];
 
-export function WorkingMethodSection() {
+export async function WorkingMethodSection() {
   return (
     <section id="approach" className="relative">
       <div className="shell section-lead">

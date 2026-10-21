@@ -34,8 +34,8 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   if (!isAdminRequest(request)) return unauthorized();
   return NextResponse.json({
-    campaigns: listCampaigns(),
-    observations: listObservations(),
+    campaigns: await listCampaigns(),
+    observations: await listObservations(),
   });
 }
 
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
   if (!name) return badRequest("A campaign name is required.", "name");
 
   try {
-    const campaign = createCampaign(`cmp_${randomUUID().slice(0, 8)}`, {
+    const campaign = await createCampaign(`cmp_${randomUUID().slice(0, 8)}`, {
       name,
       channel: cleanString(input.channel, 80),
       objective: cleanString(input.objective, 400),
@@ -83,7 +83,7 @@ export async function PUT(request: NextRequest) {
   }
 
   try {
-    const updated = updateCampaign(id, {
+    const updated = await updateCampaign(id, {
       name: name ?? undefined,
       channel:
         input.channel === undefined ? undefined : cleanString(input.channel, 80),
@@ -125,7 +125,7 @@ export async function DELETE(request: NextRequest) {
   const id = request.nextUrl.searchParams.get("id");
   if (!id) return badRequest("A campaign id is required.");
 
-  if (!deleteCampaign(id)) {
+  if (!await deleteCampaign(id)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   return NextResponse.json({ success: true });

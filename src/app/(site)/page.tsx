@@ -9,6 +9,7 @@ import { EducationSection } from "@/components/EducationSection";
 import { ContactSection } from "@/components/ContactSection";
 import { SiteFooter } from "@/components/SiteFooter";
 import { getSeoMetadata } from "@/lib/db/seo";
+import type { SeoMetadataRow } from "@/lib/db/types.ts";
 
 /**
  * The page is prerendered and served from the full route cache.
@@ -39,9 +40,9 @@ export async function generateMetadata(): Promise<Metadata> {
   // The override lives in the database, which a static export does not have.
   // If it cannot be read, the code defaults below are used — the export still
   // builds, and the console's overrides simply do not apply there.
-  let override: ReturnType<typeof getSeoMetadata> = null;
+  let override: SeoMetadataRow | null = null;
   try {
-    override = getSeoMetadata("/");
+    override = await getSeoMetadata("/");
   } catch {
     override = null;
   }

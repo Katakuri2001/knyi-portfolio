@@ -32,24 +32,25 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   if (!isAdminRequest(request)) return unauthorized();
 
-  return NextResponse.json({
-    integrations: INTEGRATIONS.map((definition) => {
-      const state = lastState(definition.key);
-      return {
-        key: definition.key,
-        label: definition.label,
-        purpose: definition.purpose,
-        requires: definition.requires,
-        setup: definition.setup,
-        supported: definition.supported,
-        missing: missingVariables(definition),
-        status: state?.status ?? quickStatus(definition),
-        message: state?.message ?? null,
-        lastChecked: state?.last_checked ?? null,
-        lastSuccess: state?.last_success ?? null,
-      };
-    }),
-  });
+  const integrations = [];
+  for (const definition of INTEGRATIONS) {
+    const state = await lastState(definition.key);
+    integrations.push({
+      key: definition.key,
+      label: definition.label,
+      purpose: definition.purpose,
+      requires: definition.requires,
+      setup: definition.setup,
+      supported: definition.supported,
+      missing: missingVariables(definition),
+      status: state?.status ?? quickStatus(definition),
+      message: state?.message ?? null,
+      lastChecked: state?.last_checked ?? null,
+      lastSuccess: state?.last_success ?? null,
+    });
+  }
+
+  return NextResponse.json({ integrations });
 }
 
 export async function POST(request: NextRequest) {
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
   }
 
   const result = await checkIntegration(key);
-  recordIntegrationState(key, result.status, result.message);
+  await recordIntegrationState(key, result.status, result.message);
 
   return NextResponse.json({ key, ...result });
 }

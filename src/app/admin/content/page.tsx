@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
  * rather than being the whole console.
  */
 export default async function ContentPage() {
-  const studies = getCaseStudies();
+  const studies = await getCaseStudies();
 
   return (
     <>

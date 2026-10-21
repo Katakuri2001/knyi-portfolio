@@ -14,9 +14,9 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
-  const profile = getProfile();
-  const caseStudies = getCaseStudies();
-  const overrides = listSeoMetadata();
+  const profile = await getProfile();
+  const caseStudies = await getCaseStudies();
+  const overrides = await listSeoMetadata();
 
   return (
     <>
@@ -100,6 +100,29 @@ export default async function SettingsPage() {
             </p>
           </Panel>
         </PanelGrid>
+      </div>
+
+      <div className="mt-4">
+        <Panel
+          title="Content export"
+          description="The live content, as a file"
+        >
+          <p className="max-w-prose text-[0.875rem] leading-relaxed text-muted-text">
+            The site&apos;s copy lives in the database, so the console can
+            write to it on a platform with no filesystem. The files in
+            <code className="mx-1 font-geist-mono text-[0.8125rem]">content/</code>
+            are the seed that a fresh deployment starts from. Download the
+            current content to keep the repository in step with what the site
+            is serving.
+          </p>
+          <a
+            href="/api/admin/content/export"
+            download
+            className="glass-primary mt-4 inline-flex items-center gap-2 px-4 py-2.5"
+          >
+            Download the current content
+          </a>
+        </Panel>
       </div>
 
       <div className="mt-4">

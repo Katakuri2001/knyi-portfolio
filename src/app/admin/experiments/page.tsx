@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function ExperimentsPage() {
-  const experiments = listExperiments();
+  const experiments = await listExperiments();
 
   const running = experiments.filter((item) => item.status === "running").length;
   const concluded = experiments.filter((item) => item.status === "concluded").length;

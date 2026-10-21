@@ -8,21 +8,23 @@ import {
   sanitiseCaseStudy,
   ValidationError,
 } from "@/lib/case-studies";
-import { readJson, writeJson, type CaseStudy } from "@/lib/content";
+import {
+  getCaseStudies,
+  writeContent,
+  type CaseStudy,
+} from "@/lib/content";
 import { removeUpload } from "@/lib/uploads";
 
 export const runtime = "nodejs";
 
-const FILE = "case-studies.json";
-
-function load(): CaseStudy[] {
-  return readJson<CaseStudy[]>(FILE);
+async function load(): Promise<CaseStudy[]> {
+  return getCaseStudies();
 }
 
-function save(studies: CaseStudy[]) {
-  writeJson(FILE, normaliseOrder(studies));
-  // The public page is statically prerendered and reads this file at render
-  // time, so a revalidation is what makes a new case study appear on /.
+async function save(studies: CaseStudy[]) {
+  await writeContent("case-studies", normaliseOrder(studies));
+  // The public page is prerendered and reads the content store at render time,
+  // so a revalidation is what makes a new case study appear on /.
   revalidatePath("/");
 }
 
@@ -36,7 +38,7 @@ function crossOrigin() {
 
 export async function GET(request: NextRequest) {
   if (!hasValidSession(request)) return unauthorised();
-  return NextResponse.json(load());
+  return NextResponse.json(await load());
 }
 
 export async function POST(request: NextRequest) {
@@ -46,14 +48,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const study = sanitiseCaseStudy(body);
-    const existing = load();
+    const existing = await load();
     const created: CaseStudy = {
       ...study,
       id: createId(),
       order: existing.length,
     };
 
-    save([...existing, created]);
+    await save([...existing, created]);
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
     if (error instanceof ValidationError) {
@@ -69,7 +71,7 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = (await request.json()) as { id?: string } & Record<string, unknown>;
-    const existing = load();
+    const existing = await load();
     const index = existing.findIndex((item) => item.id === body.id);
 
     if (index === -1) {
@@ -79,7 +81,7 @@ export async function PUT(request: NextRequest) {
     const updated = sanitiseCaseStudy(body, existing[index]);
     const next = [...existing];
     next[index] = updated;
-    save(next);
+    await save(next);
 
     return NextResponse.json(updated);
   } catch (error) {
@@ -99,7 +101,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "id is required" }, { status: 400 });
   }
 
-  const existing = load();
+  const existing = await load();
   const target = existing.find((item) => item.id === id);
 
   if (!target) {
@@ -110,6 +112,6 @@ export async function DELETE(request: NextRequest) {
   // orphans every time a case study is deleted.
   if (target.image) removeUpload(target.image);
 
-  save(existing.filter((item) => item.id !== id));
+  await save(existing.filter((item) => item.id !== id));
   return NextResponse.json({ success: true });
 }

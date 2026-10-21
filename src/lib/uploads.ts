@@ -1,35 +1,24 @@
+import "server-only";
+
 import fs from "node:fs";
 import path from "node:path";
+import { storageBinding } from "@/lib/db/adapter.ts";
 
 /**
  * Uploaded-image storage.
  *
- * Files land in `public/uploads/` on disk but are **served from
- * `/api/uploads/<name>`**, not from `/uploads/<name>`. That indirection is
- * deliberate and was found the hard way: `next start` snapshots the `public/`
- * directory at build time, so a file written after the build is not served
- * (verified: a freshly uploaded PNG 404s from `/uploads/...`). A route handler
- * always reads from disk, so an upload appears immediately.
+ * Files are stored in `public/uploads/` on a Node host and in an R2 bucket on
+ * Cloudflare Workers. The public URL is the same either way — `/api/uploads/<name>` —
+ * so nothing above this module has to know which one it is.
  *
- * This is also deliberately filesystem-backed rather than a blob store or a
- * database:
+ * The trade-off is that this requires a **writable** filesystem on a Node host.
+ * It does not work on read-only serverless hosting, which is why the Worker
+ * path uses R2 instead.
  *
- *   - the project has no database and no object-storage dependency, and the
- *     brief for this stage forbids adding runtime packages;
- *   - the whole content layer is already JSON files on disk, so images living
- *     on disk is consistent rather than novel.
- *
- * The trade-off is that this requires a **writable** filesystem. It works on a
- * VPS, a home server, or `next start` locally. It does not work on a read-only
- * serverless filesystem — when this site moves to Cloudflare Workers/D1 (the
- * stage documented in `docs/superpowers/specs/`), only this file and the two
- * upload routes need to change; the JSON contract stays the same.
+ * When the project moves to Cloudflare Workers + D1 (the stage documented in
+ * `docs/superpowers/specs/`), only this file and the two upload routes need to
+ * change; the JSON contract and every component stay the same.
  */
-
-export const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
-
-/** Public URL prefix for stored uploads. */
-export const UPLOAD_URL_PREFIX = "/api/uploads";
 
 export const MAX_UPLOAD_BYTES = 6 * 1024 * 1024;
 
@@ -40,17 +29,18 @@ const ACCEPTED: Record<string, string> = {
   "image/avif": "avif",
 };
 
+/** The bucket name inside R2. */
+const R2_PREFIX = "uploads";
+
 export class UploadError extends Error {}
 
 export function publicPathFor(id: string, extension: string): string {
-  return `${UPLOAD_URL_PREFIX}/${id}.${extension}`;
+  return `/api/uploads/${id}.${extension}`;
 }
 
-/** The filename on disk, derived from a public path. */
-export function filenameFromPublicPath(publicPath: string): string | null {
-  if (!publicPath.startsWith(`${UPLOAD_URL_PREFIX}/`)) return null;
-  const name = publicPath.slice(UPLOAD_URL_PREFIX.length + 1);
-  return /^[a-z0-9-]+\.(jpg|jpeg|png|webp|avif)$/i.test(name) ? name : null;
+/** The key inside the bucket, or the filename inside the local directory. */
+function storageKey(name: string): string {
+  return `${R2_PREFIX}/${name}`;
 }
 
 export function contentTypeFor(filename: string): string {
@@ -103,22 +93,63 @@ export async function saveUpload(file: File): Promise<{
     throw new UploadError("That file does not look like a valid image.");
   }
 
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-
   const id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-  const destination = path.join(UPLOAD_DIR, `${id}.${extension}`);
-  fs.writeFileSync(destination, buffer);
+  const name = `${id}.${extension}`;
+
+  const binding = storageBinding();
+  if (binding?.UPLOADS) {
+    await binding.UPLOADS.put(storageKey(name), buffer, {
+      httpMetadata: { contentType: file.type },
+    });
+  } else {
+    const directory = path.join(process.cwd(), "public", R2_PREFIX);
+    fs.mkdirSync(directory, { recursive: true });
+    fs.writeFileSync(path.join(directory, name), buffer);
+  }
 
   return { path: publicPathFor(id, extension), width, height, bytes: buffer.length };
 }
 
-export function removeUpload(publicPath: string | null | undefined) {
+/** Reads a stored image. Returns null when it is not there. */
+export async function readUpload(
+  name: string
+): Promise<{ body: ArrayBuffer | Uint8Array; contentType: string } | null> {
+  if (!/^[a-z0-9-]+\.(jpg|jpeg|png|webp|avif)$/i.test(name)) return null;
+
+  const binding = storageBinding();
+  if (binding?.UPLOADS) {
+    const object = await binding.UPLOADS.get(storageKey(name));
+    if (!object) return null;
+    return {
+      body: await object.arrayBuffer(),
+      contentType:
+        object.httpMetadata?.contentType ?? contentTypeFor(name),
+    };
+  }
+
+  const file = path.join(process.cwd(), "public", R2_PREFIX, name);
+  if (!fs.existsSync(file)) return null;
+  return {
+    body: fs.readFileSync(file),
+    contentType: contentTypeFor(name),
+  };
+}
+
+export async function removeUpload(
+  publicPath: string | null | undefined
+): Promise<void> {
   if (!publicPath) return;
-  const filename = filenameFromPublicPath(publicPath);
-  if (!filename) return;
-  const file = path.join(UPLOAD_DIR, filename);
-  // Guard against a stored path that somehow escaped the uploads directory.
-  if (!file.startsWith(UPLOAD_DIR + path.sep)) return;
+  const name = publicPath.replace(/^\/api\/uploads\//, "");
+  if (!/^[a-z0-9-]+\.(jpg|jpeg|png|webp|avif)$/i.test(name)) return;
+
+  const binding = storageBinding();
+  if (binding?.UPLOADS) {
+    await binding.UPLOADS.delete(storageKey(name)).catch(() => undefined);
+    return;
+  }
+
+  const file = path.join(process.cwd(), "public", R2_PREFIX, name);
+  if (!file.startsWith(path.join(process.cwd(), "public", R2_PREFIX))) return;
   fs.rm(file, { force: true }, () => {});
 }
 
@@ -187,7 +218,10 @@ export function imageDimensions(buffer: Buffer): {
         (marker >= 0xc9 && marker <= 0xcb) ||
         (marker >= 0xcd && marker <= 0xcf);
       if (isFrameHeader) {
-        return { height: buffer.readUInt16BE(offset + 5), width: buffer.readUInt16BE(offset + 7) };
+        return {
+          height: buffer.readUInt16BE(offset + 5),
+          width: buffer.readUInt16BE(offset + 7),
+        };
       }
       const segmentLength = buffer.readUInt16BE(offset + 2);
       if (segmentLength < 2) break;

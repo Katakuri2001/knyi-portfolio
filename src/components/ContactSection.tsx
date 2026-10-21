@@ -12,8 +12,8 @@ import { getProfile } from "@/lib/content";
  * details come from content/profile.json — none are invented here.
  */
 
-export function ContactSection() {
-  const profile = getProfile();
+export async function ContactSection() {
+  const profile = await getProfile();
   const { email, telegram, phone } = profile.contact;
 
   return (

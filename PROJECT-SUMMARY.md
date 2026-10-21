@@ -86,10 +86,17 @@ misread as a result. Full design record: `.stitch/DESIGN.md`; rationale and deci
 10. ✅ Footer — continues the dark room; brand, positioning, index, legal line
 
 ## Content Source of Truth
-All section copy reads from `content/*.json` through `src/lib/content.ts`, which reads
-the files from disk at render time so admin edits reach the live page. No section
-hardcodes a second copy. Case-study metrics render only when the JSON supplies them.
-See `docs/STAGE-2-LIQUID-EDITORIAL.md`.
+All section copy reads through `src/lib/content.ts`, from the **content store** in the
+database — one JSON document per kind. The console writes that store, so an admin edit
+reaches the live page. No section hardcodes a second copy. Case-study metrics render
+only when the record supplies them.
+
+The files in `content/` are the **seed**: bundled with the code and used whenever the
+store has no row for a kind, so a fresh deployment renders correctly before anything
+is seeded. `npm run seed` writes the seed into an empty store. Settings → Content
+export downloads the live content, so the repository can be kept in step.
+
+See `docs/STAGE-2-LIQUID-EDITORIAL.md` and `docs/STAGE-7-CLOUDFLARE-WORKERS.md`.
 
 ## Admin Console (`/admin`)
 A marketing intelligence console with eleven sections: **Overview**, Analytics, SEO
@@ -109,9 +116,10 @@ Content & case studies, Experiments & optimisation, Integrations, Reports, Setti
   of an environment variable
 - Case-study CRUD with image upload, alt text and reordering, unchanged in capability
 - Lead pipeline: new → contacted → qualified → proposal sent → won → lost → archived
-- Data storage: SQLite at ./data/knyi.db for generated and transactional data; the
-  reviewed portfolio copy stays in /content/*.json. Images in public/uploads/ served
-  from /api/uploads/<name>
+- Data storage: one storage port with two adapters — SQLite at ./data/knyi.db on a
+  Node host, D1 on Cloudflare Workers. The same queries run either way. The reviewed
+  portfolio copy is in the content store. Images go to public/uploads/ on Node and to
+  an R2 bucket on Workers, both served from /api/uploads/<name>
 - Writes revalidate the public page (`export const revalidate = 3600` on the route)
 
 ## Code Quality
@@ -134,12 +142,15 @@ Content & case studies, Experiments & optimisation, Integrations, Reports, Setti
 - Framework: Next.js 16.4.0 with App Router
 - Styling: Tailwind CSS v4 + CSS custom properties for palette
 - Fonts: Geist Sans & Geist Mono (self-hosted, `next/font/local`)
-- Data: SQLite (better-sqlite3) for leads, events, campaigns, SEO audits and
-  experiments; JSON files on disk for the reviewed portfolio content
+- Data: SQLite through a storage port — better-sqlite3 on a Node host, D1 on
+  Cloudflare Workers — for leads, events, campaigns, SEO audits, experiments and the
+  reviewed portfolio content
+- Deployment: Next.js on Node, or the same app on Cloudflare Workers via OpenNext
+  (D1 + R2 + the Images binding)
 - Auth: Cookie-based, HttpOnly, HMAC-signed, single-owner design
 - Tests: Node's built-in runner with native TypeScript — no test framework added
 - Images: owner-supplied portrait in /public/images; case-study uploads in
-  /public/uploads/ (needs a writable filesystem)
+  /public/uploads/ on Node (needs a writable filesystem) or in R2 on Workers
 
 ## Optional Integrations (env-var configurable)
 See `.env.example` for the full list, grouped by public id vs secret.
@@ -154,17 +165,21 @@ See `.env.example` for the full list, grouped by public id vs secret.
 - Custom domains: knyimediabuyer.xyz, admin.knyimediabuyer.xyz
 
 ## Next Steps (Owner Action Required)
-1. **Deploy the app to a Node host.** The console, the public contact form and
-   first-party event ingestion all need a server; GitHub Pages serves the public
-   page only. A `Dockerfile` and `docker-compose.yml` are provided.
+1. **Create the Cloudflare resources and deploy the Worker.** The console, the
+   public contact form and first-party event ingestion all need a server; GitHub
+   Pages serves the public page only. The step-by-step handover is in
+   `docs/STAGE-7-CLOUDFLARE-WORKERS.md` — two D1 databases, two R2 buckets, the
+   secrets, and `npm run deploy:cloudflare`. A `Dockerfile` and
+   `docker-compose.yml` are provided if a Node host is preferred instead.
 2. Set `ADMIN_PASSWORD` — production refuses to start without it
 3. Set `NEXT_PUBLIC_SITE_URL` to enable the canonical URL, the sitemap and `og:url`
 4. Add `GOOGLE_SERVICE_ACCOUNT_JSON` to unlock GA4 reporting and Search Console
 5. Add `NEXT_PUBLIC_GA_MEASURE_ID` to unlock GA4 collection
 6. Add `NEXT_PUBLIC_META_PIXEL_ID` to unlock remarketing audiences
-7. Replace the placeholder contact details in `content/profile.json`
-   (`info@knyi-portfolio.local`, `@knyi-portfolio`, `http://localhost:3000`) — or edit
-   them from **Settings** in the console
+7. Replace the placeholder contact details (`info@knyi-portfolio.local`,
+   `@knyi-portfolio`, `http://localhost:3000`) — edit them from **Settings** in the
+   console, which writes the content store, and export the content to keep the
+   repository in step
 8. Clear the GitHub account's billing lock to re-enable the automatic Pages deploy
 9. Decide where the full SEO lockup goes and reconcile "SEO & Marketing" with the
    site's "performance marketer" positioning

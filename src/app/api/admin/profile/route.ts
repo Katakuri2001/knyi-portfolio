@@ -11,19 +11,17 @@ import {
   serverError,
   unauthorized,
 } from "@/lib/admin-api";
-import { readJson as readContent, writeJson } from "@/lib/content";
-import type { Profile } from "@/lib/content";
+import { readContent, writeContent, type Profile } from "@/lib/content";
 
 /**
  * /api/admin/profile — the owner's details and contact information.
  *
- * `content/profile.json` is a **single object**, so this route replaces it
- * rather than appending to it. (The older `/api/content/profile` route
- * treated it as an array and could never write — see
- * `docs/STAGE-5-ADMIN-CONSOLE-BACKLOG.md`.)
+ * The profile is a **single object**, so this route replaces it rather than
+ * appending to it. (The older `/api/content/profile` route treated it as an
+ * array and could never write — see `docs/STAGE-5-ADMIN-CONSOLE-BACKLOG.md`.)
  *
- * The content layer reads this file at render time, so a saved change appears
- * on the public site at the next revalidation.
+ * It is stored in the content store, so a saved change appears on the public
+ * site at the next revalidation.
  */
 
 export const runtime = "nodejs";
@@ -46,7 +44,7 @@ const MAX = {
 
 export async function GET(request: NextRequest) {
   if (!isAdminRequest(request)) return unauthorized();
-  return NextResponse.json(readContent<Profile>("profile.json"));
+  return NextResponse.json(await readContent<Profile>("profile"));
 }
 
 export async function PUT(request: NextRequest) {
@@ -57,7 +55,7 @@ export async function PUT(request: NextRequest) {
   if (!body || typeof body !== "object") return badRequest("Invalid request body.");
 
   const input = body as Record<string, unknown>;
-  const current = readContent<Profile>("profile.json");
+  const current = await readContent<Profile>("profile");
   const contactInput = (input.contact ?? {}) as Record<string, unknown>;
 
   const email = cleanString(contactInput.email, MAX.email);
@@ -102,7 +100,7 @@ export async function PUT(request: NextRequest) {
   };
 
   try {
-    writeJson("profile.json", next);
+    await writeContent("profile", next);
     // The public page reads the profile during its render, so it has to be
     // regenerated for the change to appear.
     revalidatePath("/");
